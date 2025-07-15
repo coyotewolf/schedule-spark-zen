@@ -64,11 +64,7 @@ export const UnscheduledTaskDrawer = ({ isOpen, onClose }: UnscheduledTaskDrawer
           {unscheduledTasks.map((task) => (
             <UnscheduledTaskChip
               key={task.id}
-              id={task.id}
-              title={task.title}
-              category={task.category}
-              estimatedTime={task.estimatedTime}
-              categoryColor={task.categoryColor}
+              task={task}
               onDragToSchedule={handleDragToSchedule}
             />
           ))}

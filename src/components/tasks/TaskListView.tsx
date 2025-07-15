@@ -10,7 +10,8 @@ interface TaskListViewProps {
 interface Task {
   id: string;
   title: string;
-  category: 'general' | 'background' | 'light';
+  category: string; // User-defined category
+  taskType: 'general' | 'background' | 'light'; // Fixed task type
   estimatedTime: number; // minutes
   location?: string;
   preferredSlot?: string;
@@ -26,7 +27,8 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
     {
       id: "1",
       title: "完成專案提案",
-      category: "general",
+      category: "工作",
+      taskType: "general",
       estimatedTime: 120,
       location: "辦公室",
       preferredSlot: "上午",
@@ -38,7 +40,8 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
         {
           id: "1-1",
           title: "收集需求資料",
-          category: "general",
+          category: "工作",
+          taskType: "general",
           estimatedTime: 30,
           canOverlap: false,
           status: "completed",
@@ -48,7 +51,8 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
         {
           id: "1-2", 
           title: "撰寫提案內容",
-          category: "general",
+          category: "工作",
+          taskType: "general",
           estimatedTime: 90,
           canOverlap: false,
           status: "in_progress",
@@ -60,7 +64,8 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
     {
       id: "2",
       title: "回覆客戶郵件",
-      category: "light",
+      category: "工作",
+      taskType: "light",
       estimatedTime: 15,
       canOverlap: true,
       status: "pending",
@@ -70,7 +75,8 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
     {
       id: "3",
       title: "檢查系統監控",
-      category: "background",
+      category: "技術",
+      taskType: "background",
       estimatedTime: 10,
       canOverlap: true,
       status: "pending",
