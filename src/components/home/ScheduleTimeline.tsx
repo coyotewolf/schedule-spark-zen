@@ -97,17 +97,35 @@ export const ScheduleTimeline = () => {
 
   return (
     <div className="relative">
-      {/* Vertical Timeline */}
+      {/* Full Vertical Timeline */}
       <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col">
-        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border"></div>
+        {/* Main timeline line - 2px width */}
+        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-timeline-color" style={{ width: '2px' }}></div>
+        
+        {/* Hour markers and labels */}
+        {Array.from({ length: 12 }, (_, i) => {
+          const hour = 8 + i; // Start from 8AM
+          const topPosition = i * 80;
+          return (
+            <div key={hour} className="absolute left-0" style={{ top: `${topPosition}px` }}>
+              {/* Hour text - left side of line, no overlap */}
+              <span className="absolute text-xs font-medium text-muted-foreground" style={{ right: '32px', top: '-6px' }}>
+                {hour.toString().padStart(2, '0')}:00
+              </span>
+            </div>
+          );
+        })}
+        
+        {/* Task dots positioned on timeline */}
         {todayTasks.map((task, index) => {
           const hour = parseInt(task.time.split(':')[0]);
-          const topPosition = ((hour - 8) * 80) + 40; // Assuming 8AM start, 80px per hour
+          const minutes = parseInt(task.time.split(':')[1]);
+          const topPosition = ((hour - 8) * 80) + (minutes / 60 * 80);
           
           return (
             <div
               key={`dot-${task.id}`}
-              className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background"
+              className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background z-10"
               style={{ top: `${topPosition}px`, left: '14px' }}
             />
           );
@@ -115,13 +133,9 @@ export const ScheduleTimeline = () => {
       </div>
 
       {/* Time Labels and Task Cards */}
-      <div className="ml-12 space-y-4">
+      <div className="ml-12 space-y-3">
         {todayTasks.map((task, index) => (
           <div key={task.id} className="relative">
-            {/* Time Label */}
-            <div className="absolute -left-12 top-4 w-10 text-xs font-medium text-muted-foreground text-right">
-              {task.time}
-            </div>
             
             {/* Travel Gap Indicator */}
             {task.travelTime && index > 0 && (
@@ -133,7 +147,7 @@ export const ScheduleTimeline = () => {
             
             {/* Schedule Task Card - No Border */}
             <div 
-              className="bg-card/95 p-4 rounded-lg cursor-pointer hover:bg-card transition-colors border-0 shadow-none"
+              className="bg-card p-3 rounded-lg cursor-pointer hover:bg-card/80 transition-colors border-0 shadow-none"
               onClick={() => openTaskDetail(task.id)}
             >
               <div className="flex items-start justify-between mb-2">

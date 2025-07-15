@@ -101,26 +101,38 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
         <h3 className="text-h3 font-semibold text-center w-full">艾森豪矩陣</h3>
       </div>
 
-      {/* Priority Quadrant Board - Dot Mode */}
+      {/* Priority Quadrant Board - Axis Color Mode */}
       <div className="relative bg-card border border-border rounded-xl p-8" style={{ height: '500px' }}>
+        {/* Quadrant Background Colors */}
+        <div className="absolute inset-8">
+          {/* Top half - 緊急 */}
+          <div className="absolute top-0 left-0 right-0 h-1/2 bg-orange-50/30"></div>
+          {/* Bottom half - 不緊急 */}
+          <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-blue-50/30"></div>
+          {/* Left half - 不重要 */}
+          <div className="absolute top-0 left-0 bottom-0 w-1/2 bg-gray-50/30"></div>
+          {/* Right half - 重要 */}
+          <div className="absolute top-0 right-0 bottom-0 w-1/2 bg-green-50/30"></div>
+        </div>
+        
         {/* Axis Labels */}
         {/* Top - 緊急 */}
-        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
+        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-orange-600">
           緊急
         </div>
         
         {/* Bottom - 不緊急 */}
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-blue-600">
           不緊急
         </div>
         
         {/* Left - 不重要 */}
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm font-medium text-muted-foreground origin-center">
+        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm font-medium text-gray-600 origin-center">
           不重要
         </div>
         
         {/* Right - 重要 */}
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-sm font-medium text-muted-foreground origin-center">
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-sm font-medium text-green-600 origin-center">
           重要
         </div>
 
@@ -132,13 +144,7 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
           <div className="absolute top-1/2 left-0 right-0 h-px bg-border/50" />
         </div>
 
-        {/* Quadrant Labels */}
-        <div className="absolute top-4 left-4 text-xs text-destructive font-medium">重要且緊急</div>
-        <div className="absolute top-4 right-4 text-xs text-primary font-medium">重要不緊急</div>
-        <div className="absolute bottom-4 left-4 text-xs text-warning font-medium">不重要但緊急</div>
-        <div className="absolute bottom-4 right-4 text-xs text-muted-foreground font-medium">不重要不緊急</div>
-
-        {/* Task Dots */}
+        {/* Draggable Task Dots */}
         <div className="absolute inset-0 m-8">
           {tasks.map((task) => {
             const position = getDotPosition(task.importance, task.urgency);
@@ -146,7 +152,7 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
               <Popover key={task.id}>
                 <PopoverTrigger asChild>
                   <button
-                    className="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg hover:scale-125 transition-all duration-200 cursor-pointer"
+                    className="absolute w-3 h-3 rounded-full border-2 border-white shadow-lg hover:scale-125 transition-all duration-200 cursor-move z-10"
                     style={{
                       left: `${position.x}%`,
                       top: `${position.y}%`,
@@ -154,47 +160,62 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
                       transform: 'translate(-50%, -50%)'
                     }}
                     onClick={() => showMiniTaskInfo(task)}
+                    onMouseDown={(e) => {
+                      // Trigger: startDragTask for future implementation
+                      console.log("Trigger: startDragTask", task.id);
+                    }}
                   />
                 </PopoverTrigger>
                 
-                <PopoverContent className="w-64 p-3">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm">{task.title}</h4>
-                    
-                    <div className="space-y-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {task.estimatedTime} 分鐘
-                      </div>
-                      
-                      {task.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {task.location}
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getCategoryColor(task.category) }}
-                        />
-                        {task.category}
-                      </div>
-                    </div>
+                 <PopoverContent className="w-64 p-3 rounded-2xl">
+                   <div className="space-y-3">
+                     <h4 className="font-medium text-sm">{task.title}</h4>
+                     
+                     <div className="space-y-2 text-xs text-muted-foreground">
+                       <div className="flex items-center gap-1">
+                         <Clock className="w-3 h-3" />
+                         {task.estimatedTime} 分鐘
+                       </div>
+                       
+                       {task.location && (
+                         <div className="flex items-center gap-1">
+                           <MapPin className="w-3 h-3" />
+                           {task.location}
+                         </div>
+                       )}
+                       
+                       <div className="flex items-center gap-1">
+                         <div 
+                           className="w-3 h-3 rounded-full" 
+                           style={{ backgroundColor: getCategoryColor(task.category) }}
+                         />
+                         {task.category}
+                       </div>
+                       
+                       <div className="grid grid-cols-2 gap-2 text-xs">
+                         <div>
+                           <span className="text-muted-foreground">重要度：</span>
+                           <span className="font-medium">{task.importance}/5</span>
+                         </div>
+                         <div>
+                           <span className="text-muted-foreground">緊急度：</span>
+                           <span className="font-medium">{task.urgency}/5</span>
+                         </div>
+                       </div>
+                     </div>
 
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
-                        <Edit className="w-3 h-3 mr-1" />
-                        編輯
-                      </Button>
-                      <Button size="sm" className="h-7 px-2 text-xs">
-                        <Check className="w-3 h-3 mr-1" />
-                        完成
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
+                     <div className="flex gap-2 pt-2">
+                       <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                         <Edit className="w-3 h-3 mr-1" />
+                         編輯
+                       </Button>
+                       <Button size="sm" className="h-7 px-2 text-xs">
+                         <Check className="w-3 h-3 mr-1" />
+                         完成
+                       </Button>
+                     </div>
+                   </div>
+                 </PopoverContent>
               </Popover>
             );
           })}
