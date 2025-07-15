@@ -56,7 +56,7 @@ export const HomePage = () => {
       </header>
 
       {/* Main Content */}
-      <div className="space-y-8 p-4 pb-24">
+      <div className="space-y-8 p-4 pb-32"> {/* 增加底部填充 */}
         {/* Daily Quote */}
         <DailyQuote />
         

@@ -109,9 +109,11 @@ export const ScheduleTimeline = () => {
     }
   };
 
+  const timelineHeight = (22 - 8 + 1) * 80; // 總小時數 * 每小時高度
+
   return (
     <div className="bg-card rounded-xl border border-border shadow-sm p-4">
-      <div className="relative min-h-[600px]">
+      <div className="relative" style={{ height: `${timelineHeight}px` }}>
         {/* Hourly Time Labels - positioned to not overlap with timeline */}
         <div className="absolute left-0 top-0 w-14 text-xs text-muted-foreground z-20">
           {hourlyLabels.map((hour) => (

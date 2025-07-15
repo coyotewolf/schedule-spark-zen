@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Function Tester</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; }
+    input { margin-bottom: 0.5em; }
+    #result { white-space: pre-wrap; background-color: #eee; border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
+  </style>
+</head>
+<body>
+
+  <h1>Firebase Function Tester</h1>
+
+  <h2>1. Sign In</h2>
+  <input type="email" id="email" placeholder="Email (e.g., test@test.com)" value="test@test.com" />
+  <br/>
+  <input type="password" id="password" placeholder="Password" value="123456" />
+  <br/>
+  <button id="signInBtn">Sign In</button>
+  <p>Status: <span id="authStatus">Not signed in</span></p>
+
+  <hr/>
+
+  <h2>2. Call Function</h2>
+  <button id="callFunctionBtn" disabled>Call smartSchedule Function</button>
+  <h3>Result:</h3>
+  <pre id="result"></pre>
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, connectAuthEmulator, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getFunctions, connectFunctionsEmulator, httpsCallable } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3dnIBGI8GDrE86_U04WWFkJ9JRoGhEJI",
+      authDomain: "schedule-spark-zen.firebaseapp.com",
+      projectId: "schedule-spark-zen",
+      storageBucket: "schedule-spark-zen.firebasestorage.app",
+      messagingSenderId: "734668136287",
+      appId: "1:734668136287:web:6e749939c8e06547d7a0ea",
+      measurementId: "G-6DE0KNDBWG"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const functions = getFunctions(app);
+
+    // Connect to local emulators
+    connectAuthEmulator(auth, "http://127.0.0.1:9099");
+    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+
+    const signInBtn = document.getElementById('signInBtn');
+    const callFunctionBtn = document.getElementById('callFunctionBtn');
+    const authStatus = document.getElementById('authStatus');
+    const resultDiv = document.getElementById('result');
+
+    // Sign In Logic
+    signInBtn.onclick = async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      resultDiv.textContent = 'Signing in...';
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        authStatus.textContent = `Signed in as ${userCredential.user.email} (UID: ${userCredential.user.uid})`;
+        callFunctionBtn.disabled = false;
+        resultDiv.textContent = 'Sign in successful. Ready to call function.';
+      } catch (error) {
+        authStatus.textContent = 'Sign in failed.';
+        resultDiv.textContent = `Error: ${error.message}`;
+      }
+    };
+
+    // Call Function Logic
+    callFunctionBtn.onclick = async () => {
+      resultDiv.textContent = 'Calling function...';
+      const smartSchedule = httpsCallable(functions, 'smartSchedule');
+      
+      // Dummy data for the function call
+      const testData = {
+        tasks: [{ id: "task1", title: "Test Task", estMinutes: 60 }],
+        userPref: { efficiencyPeak: "MORNING" },
+        existingBlocks: []
+      };
+
+      try {
+        const result = await smartSchedule(testData);
+        resultDiv.textContent = JSON.stringify(result.data, null, 2);
+      } catch (error) {
+        console.error(error);
+        resultDiv.textContent = `Function call failed!\n\nError Code: ${error.code}\nMessage: ${error.message}`;
+      }
+    };
+  </script>
+
+</body>
+</html>

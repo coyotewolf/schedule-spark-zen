@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can manage their own user document
+    match /users/{userId} {
+      allow read, update, delete: if isOwner(userId);
+      allow create: if request.auth != null;
+    }
+
+    // Users can manage their own preferences document
+    match /user_preferences/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Users can manage their own categories
+    match /categories/{categoryId} {
+      allow read, write: if isOwner(request.resource.data.userId);
+    }
+
+    // Users can manage their own tasks
+    match /tasks/{taskId} {
+      allow read, write: if isOwner(request.resource.data.userId);
+    }
+
+    // Users can manage their own schedule blocks
+    match /schedule_blocks/{blockId} {
+      allow read, write: if isOwner(request.resource.data.userId);
+    }
+
+    // Users can manage their own pomodoro logs
+    match /pomodoro_logs/{logId} {
+      allow read, write: if isOwner(request.resource.data.userId);
+    }
+  }
+}
