@@ -110,103 +110,105 @@ export const ScheduleTimeline = () => {
   };
 
   return (
-    <div className="relative">
-      {/* Hourly Time Labels */}
-      <div className="absolute left-0 top-0 w-12 text-xs text-muted-foreground">
-        {hourlyLabels.map((hour) => (
-          <div
-            key={hour.hour}
-            className="absolute font-medium text-right pr-2"
-            style={{ top: `${(hour.hour - 8) * 80}px` }}
-          >
-            {hour.label}
-          </div>
-        ))}
-      </div>
-      
-      {/* Vertical Timeline */}
-      <div className="absolute left-12 top-0 bottom-0 w-0.5" style={{ background: 'hsl(var(--border))' }}>
-        {todayTasks.map((task) => {
-          const hour = parseInt(task.time.split(':')[0]);
-          const minute = parseInt(task.time.split(':')[1]);
-          const topPosition = ((hour - 8) * 80) + (minute * 80 / 60);
-          
-          return (
+    <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+      <div className="relative min-h-[600px]">
+        {/* Hourly Time Labels - positioned to not overlap with timeline */}
+        <div className="absolute left-0 top-0 w-14 text-xs text-muted-foreground z-20">
+          {hourlyLabels.map((hour) => (
             <div
-              key={`dot-${task.id}`}
-              className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background"
-              style={{ 
-                top: `${topPosition + 20}px`, // Align with card center
-                left: '-6px'
-              }}
-            />
-          );
-        })}
-      </div>
-
-      {/* Task Cards */}
-      <div className="ml-16 space-y-3">
-        {todayTasks.map((task, index) => (
-          <div key={task.id} className="relative">
-            {/* Travel Gap Indicator */}
-            {task.travelTime && index > 0 && (
-              <div className="mb-2 text-caption text-muted-foreground bg-warning/10 px-3 py-1 rounded-lg inline-block">
-                <Car className="w-3 h-3 inline mr-1" />
-                移動時間 {task.travelTime} 分鐘
-              </div>
-            )}
-            
-            {/* Schedule Task Card - No Border */}
-            <div 
-              className="bg-card/95 p-4 rounded-lg cursor-pointer hover:bg-card transition-colors border-0 shadow-none"
-              onClick={() => openTaskDetail(task.id)}
+              key={hour.hour}
+              className="absolute font-medium text-right pr-3"
+              style={{ top: `${(hour.hour - 8) * 80}px` }}
             >
-              {/* Header: Task title and Status Badge */}
-              <div className="flex items-start justify-between mb-2">
-                <h3 className={`text-body font-medium ${
-                  task.completed ? 'line-through text-muted-foreground' : ''
-                }`}>
-                  {task.title}
-                </h3>
-                <div className="flex gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
-                    {getStatusText(task.status)}
-                  </span>
-                  {task.canOverlap && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary/20 text-secondary-foreground">
-                      可重疊
-                    </span>
-                  )}
+              {hour.label}
+            </div>
+          ))}
+        </div>
+        
+        {/* Vertical Timeline - positioned to the right of time labels */}
+        <div className="absolute left-16 top-0 w-0.5 h-full" style={{ background: 'hsl(var(--border))' }}>
+          {todayTasks.map((task) => {
+            const hour = parseInt(task.time.split(':')[0]);
+            const minute = parseInt(task.time.split(':')[1]);
+            const topPosition = ((hour - 8) * 80) + (minute * 80 / 60);
+            
+            return (
+              <div
+                key={`dot-${task.id}`}
+                className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background z-10"
+                style={{ 
+                  top: `${topPosition + 20}px`, // Align with card center
+                  left: '-6px'
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* Task Cards - positioned to the right of timeline */}
+        <div className="ml-20 space-y-3 pt-2">
+          {todayTasks.map((task, index) => (
+            <div key={task.id} className="relative">
+              {/* Travel Gap Indicator */}
+              {task.travelTime && index > 0 && (
+                <div className="mb-2 text-caption text-muted-foreground bg-warning/10 px-3 py-1 rounded-lg inline-block">
+                  <Car className="w-3 h-3 inline mr-1" />
+                  移動時間 {task.travelTime} 分鐘
                 </div>
-              </div>
+              )}
               
-              {/* Second line: Location and Time */}
-              <div className="flex items-center gap-4 text-caption text-muted-foreground">
-                {task.location && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {task.location}
+              {/* Schedule Task Card - No Border */}
+              <div 
+                className="bg-background/50 p-4 rounded-lg cursor-pointer hover:bg-background/80 transition-colors border border-border/50 shadow-sm"
+                onClick={() => openTaskDetail(task.id)}
+              >
+                {/* Header: Task title and Status Badge */}
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className={`text-body font-medium ${
+                    task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                  }`}>
+                    {task.title}
+                  </h3>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
+                      {getStatusText(task.status)}
+                    </span>
+                    {task.canOverlap && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary/20 text-secondary-foreground">
+                        可重疊
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {task.time}
+                </div>
+                
+                {/* Second line: Location and Time */}
+                <div className="flex items-center gap-4 text-caption text-muted-foreground">
+                  {task.location && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">{task.location}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {task.time}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-      
-      {todayTasks.length === 0 && (
-        <div className="app-card p-8 text-center">
-          <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <p className="text-body text-muted-foreground mb-2">今日暫無排程</p>
-          <p className="text-caption text-muted-foreground">
-            點擊下方快捷按鈕開始規劃你的一天
-          </p>
+          ))}
         </div>
-      )}
+        
+        {todayTasks.length === 0 && (
+          <div className="p-8 text-center mt-8">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-body text-muted-foreground mb-2">今日暫無排程</p>
+            <p className="text-caption text-muted-foreground">
+              點擊下方快捷按鈕開始規劃你的一天
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

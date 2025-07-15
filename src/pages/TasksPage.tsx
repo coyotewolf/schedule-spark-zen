@@ -13,6 +13,7 @@ export const TasksPage = () => {
   const [activeTab, setActiveTab] = useState("list");
   const [timePeriod, setTimePeriod] = useState("日");
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
+  const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
 
   const addNewTask = () => {
     // Trigger: addTask
@@ -39,7 +40,10 @@ export const TasksPage = () => {
           
           <div className="flex gap-2">
             <AddCategoryButton onClick={() => setShowAddCategoryDialog(true)} />
-            <AddTaskDialog />
+            <Button size="sm" onClick={() => setShowAddTaskDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              新增任務
+            </Button>
           </div>
         </div>
       </header>
@@ -73,6 +77,11 @@ export const TasksPage = () => {
       <AddCategoryDialog 
         open={showAddCategoryDialog}
         onOpenChange={setShowAddCategoryDialog}
+      />
+      
+      <AddTaskDialog 
+        open={showAddTaskDialog}
+        onOpenChange={setShowAddTaskDialog}
       />
     </div>
   );
