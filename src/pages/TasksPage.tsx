@@ -3,22 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskListView } from "@/components/tasks/TaskListView";
 import { PriorityQuadrantView } from "@/components/tasks/PriorityQuadrantView";
 import { TimePeriodSelector } from "@/components/tasks/TimePeriodSelector";
-import { AddCategoryDialog } from "@/components/tasks/AddCategoryDialog";
-import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
-import { AddCategoryButton } from "@/components/tasks/AddCategoryButton";
-import { Plus, FolderPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export const TasksPage = () => {
   const [activeTab, setActiveTab] = useState("list");
   const [timePeriod, setTimePeriod] = useState("日");
-  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
-  const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
-
-  const addNewTask = () => {
-    // Trigger: addTask
-    console.log("Trigger: addTask");
-  };
 
   const handlePeriodChange = (period: string) => {
     setTimePeriod(period);
@@ -36,14 +24,6 @@ export const TasksPage = () => {
             <p className="text-caption text-muted-foreground">
               管理與整理你的任務清單
             </p>
-          </div>
-          
-          <div className="flex gap-2">
-            <AddCategoryButton onClick={() => setShowAddCategoryDialog(true)} />
-            <Button size="sm" onClick={() => setShowAddTaskDialog(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              新增任務
-            </Button>
           </div>
         </div>
       </header>
@@ -73,16 +53,6 @@ export const TasksPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <AddCategoryDialog 
-        open={showAddCategoryDialog}
-        onOpenChange={setShowAddCategoryDialog}
-      />
-      
-      <AddTaskDialog 
-        open={showAddTaskDialog}
-        onOpenChange={setShowAddTaskDialog}
-      />
     </div>
   );
 };
