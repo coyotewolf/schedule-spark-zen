@@ -12,7 +12,7 @@ export const QuickActionBar = ({ onVoiceInput }: QuickActionBarProps) => {
   const [showAddTask, setShowAddTask] = useState(false);
 
   const addTask = () => {
-    // Trigger: addTaskDialog - will trigger AddTaskDialog
+    // Trigger: addTaskDialog
     console.log("Trigger: addTaskDialog");
     setShowAddTask(true);
   };

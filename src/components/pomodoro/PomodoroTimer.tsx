@@ -44,9 +44,22 @@ export const PomodoroTimer = ({
         />
       </div>
 
-      {/* Simplified Display - No mode text */}
+      {/* Mode Indicator */}
       <div className="text-center">
-        {/* Removed mode text as requested */}
+        <p className="text-caption text-muted-foreground mb-1">
+          {isWork ? '工作時間' : '休息時間'}
+        </p>
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+          isWork ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                   'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${
+            isWork ? 'bg-red-500' : 'bg-green-500'
+          } ${isActive ? 'animate-pulse' : ''}`} />
+          <span className="text-sm font-medium">
+            {isWork ? '🍅 專注模式' : '☕ 休息模式'}
+          </span>
+        </div>
       </div>
     </div>
   );

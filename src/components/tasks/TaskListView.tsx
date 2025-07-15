@@ -88,7 +88,6 @@ export const TaskListView = ({ timePeriod, onEditTask }: TaskListViewProps) => {
 
   const [filter, setFilter] = useState({
     category: "all",
-    taskType: "all",
     status: "all"
   });
 
@@ -111,7 +110,6 @@ export const TaskListView = ({ timePeriod, onEditTask }: TaskListViewProps) => {
 
   const filteredTasks = tasks.filter(task => {
     if (filter.category !== "all" && task.category !== filter.category) return false;
-    if (filter.taskType !== "all" && task.taskType !== filter.taskType) return false;
     if (filter.status !== "all" && task.status !== filter.status) return false;
     return true;
   });

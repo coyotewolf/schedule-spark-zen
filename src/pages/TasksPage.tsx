@@ -63,7 +63,7 @@ export const TasksPage = () => {
           </div>
           
           <div className="flex gap-2">
-            <AddCategoryButton />
+            <AddCategoryDialog />
             <AddTaskDialog />
           </div>
         </div>

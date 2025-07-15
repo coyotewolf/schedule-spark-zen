@@ -101,7 +101,7 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
         <h3 className="text-h3 font-semibold text-center w-full">艾森豪矩陣</h3>
       </div>
 
-      {/* Priority Quadrant Board - Axis Color Mode */}
+      {/* Priority Quadrant Board - Dot Mode */}
       <div className="relative bg-card border border-border rounded-xl p-8" style={{ height: '500px' }}>
         {/* Quadrant Background Colors */}
         <div className="absolute inset-8">
@@ -117,22 +117,22 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
         
         {/* Axis Labels */}
         {/* Top - 緊急 */}
-        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-orange-600">
+        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
           緊急
         </div>
         
         {/* Bottom - 不緊急 */}
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-blue-600">
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
           不緊急
         </div>
         
         {/* Left - 不重要 */}
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm font-medium text-gray-600 origin-center">
+        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm font-medium text-muted-foreground origin-center">
           不重要
         </div>
         
         {/* Right - 重要 */}
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-sm font-medium text-green-600 origin-center">
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-sm font-medium text-muted-foreground origin-center">
           重要
         </div>
 
@@ -144,7 +144,13 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
           <div className="absolute top-1/2 left-0 right-0 bg-border" style={{ height: '2px', transform: 'translateY(-1px)' }} />
         </div>
 
-        {/* Draggable Task Dots */}
+        {/* Quadrant Labels */}
+        <div className="absolute top-4 left-4 text-xs text-destructive font-medium">重要且緊急</div>
+        <div className="absolute top-4 right-4 text-xs text-primary font-medium">重要不緊急</div>
+        <div className="absolute bottom-4 left-4 text-xs text-warning font-medium">不重要但緊急</div>
+        <div className="absolute bottom-4 right-4 text-xs text-muted-foreground font-medium">不重要不緊急</div>
+
+        {/* Task Dots */}
         <div className="absolute inset-0 m-8">
           {tasks.map((task) => {
             const position = getDotPosition(task.importance, task.urgency);
@@ -152,7 +158,7 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
               <Popover key={task.id}>
                 <PopoverTrigger asChild>
                   <button
-                    className="absolute w-3 h-3 rounded-full border-2 border-white shadow-lg hover:scale-125 transition-all duration-200 cursor-move z-10"
+                    className="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg hover:scale-125 transition-all duration-200 cursor-pointer"
                     style={{
                       left: `${position.x}%`,
                       top: `${position.y}%`,
@@ -249,18 +255,18 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
                        </div>
                      </div>
 
-                     <div className="flex gap-2 pt-2">
-                       <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
-                         <Edit className="w-3 h-3 mr-1" />
-                         編輯
-                       </Button>
-                       <Button size="sm" className="h-7 px-2 text-xs">
-                         <Check className="w-3 h-3 mr-1" />
-                         完成
-                       </Button>
-                     </div>
-                   </div>
-                 </PopoverContent>
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                        <Edit className="w-3 h-3 mr-1" />
+                        編輯
+                      </Button>
+                      <Button size="sm" className="h-7 px-2 text-xs">
+                        <Check className="w-3 h-3 mr-1" />
+                        完成
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
               </Popover>
             );
           })}

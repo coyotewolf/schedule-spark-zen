@@ -141,6 +141,10 @@ export const ScheduleTimeline = () => {
       <div className="ml-20 space-y-4">
         {todayTasks.map((task, index) => (
           <div key={task.id} className="relative">
+            {/* Time Label */}
+            <div className="absolute -left-12 top-4 w-10 text-xs font-medium text-muted-foreground text-right">
+              {task.time}
+            </div>
             
             {/* Travel Gap Indicator */}
             {task.travelTime && index > 0 && (
@@ -152,7 +156,7 @@ export const ScheduleTimeline = () => {
             
             {/* Schedule Task Card - No Border */}
             <div 
-              className="bg-card p-3 rounded-lg cursor-pointer hover:bg-card/80 transition-colors border-0 shadow-none"
+              className="bg-card/95 p-4 rounded-lg cursor-pointer hover:bg-card transition-colors border-0 shadow-none"
               onClick={() => openTaskDetail(task.id)}
             >
               <div className="flex items-start justify-between mb-2">

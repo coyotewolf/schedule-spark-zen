@@ -3,7 +3,6 @@ import { PomodoroTimer } from "@/components/pomodoro/PomodoroTimer";
 import { CurrentTaskBadge } from "@/components/pomodoro/CurrentTaskBadge";
 import { HideOverlapToggle } from "@/components/pomodoro/HideOverlapToggle";
 import { PomodoroSettings } from "@/components/pomodoro/PomodoroSettings";
-import { ChangeTaskDialog } from "@/components/pomodoro/ChangeTaskDialog";
 import { Play, Pause, Square, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +14,6 @@ export const PomodoroPage = () => {
   const [currentTask, setCurrentTask] = useState<string | null>(null);
   const [allowOverlapDuringFocus, setAllowOverlapDuringFocus] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showChangeTask, setShowChangeTask] = useState(false);
   const [workDuration, setWorkDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
 
@@ -92,12 +90,6 @@ export const PomodoroPage = () => {
     console.log("Trigger: setAllowOverlapDuringFocus", enabled);
   };
 
-  const handleTaskChange = (taskId: string) => {
-    // Trigger: changeCurrentTask
-    console.log("Trigger: changeCurrentTask", taskId);
-    setCurrentTask(`Task ${taskId}`);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -141,23 +133,6 @@ export const PomodoroPage = () => {
           {(state === "idle" || state === "paused") && (
             <Button
               onClick={startTimer}
-              onMouseDown={(e) => {
-                // Long press detection for ChangeTaskDialog
-                const timer = setTimeout(() => {
-                  setShowChangeTask(true);
-                  // Trigger: openChangeTaskDialog
-                  console.log("Trigger: openChangeTaskDialog");
-                }, 1000);
-                
-                const handleMouseUp = () => {
-                  clearTimeout(timer);
-                  document.removeEventListener('mouseup', handleMouseUp);
-                  document.removeEventListener('mouseleave', handleMouseUp);
-                };
-                
-                document.addEventListener('mouseup', handleMouseUp);
-                document.addEventListener('mouseleave', handleMouseUp);
-              }}
               size="lg"
               className="px-8"
             >
@@ -208,13 +183,6 @@ export const PomodoroPage = () => {
         breakDuration={breakDuration}
         onWorkDurationChange={setWorkDuration}
         onBreakDurationChange={setBreakDuration}
-      />
-
-      {/* Change Task Dialog */}
-      <ChangeTaskDialog
-        open={showChangeTask}
-        onOpenChange={setShowChangeTask}
-        onTaskSelect={handleTaskChange}
       />
     </div>
   );
