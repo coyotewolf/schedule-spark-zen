@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { Plus, Clock, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Edit, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,33 +20,48 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 
-interface AddTaskDialogProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+interface Task {
+  id: string;
+  title: string;
+  category: string;
+  taskType: 'general' | 'background' | 'light';
+  estimatedTime: number;
+  location?: string;
+  preferredSlot?: string;
+  canOverlap: boolean;
+  description?: string;
 }
 
-export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  // Use controlled props if provided, otherwise use internal state
-  const dialogOpen = open !== undefined ? open : isOpen;
-  const setDialogOpen = onOpenChange || setIsOpen;
+interface EditTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  task: Task | null;
+  onSave: (task: Task) => void;
+}
+
+export const EditTaskDialog = ({ open, onOpenChange, task, onSave }: EditTaskDialogProps) => {
   const [formData, setFormData] = useState({
     title: "",
     category: "",
+    taskType: "general" as 'general' | 'background' | 'light',
     estimatedTime: [60], // in minutes
     location: "",
     preferredSlot: "",
     canOverlap: false,
-    minSplitTime: [30], // in minutes
     description: ""
   });
 
   const categories = [
-    { id: "work", name: "工作", color: "#5A8BFF" },
-    { id: "personal", name: "個人", color: "#FFB86B" },
-    { id: "health", name: "健康", color: "#3DC97F" },
-    { id: "study", name: "學習", color: "#9B59B6" }
+    { id: "工作", name: "工作", color: "#5A8BFF" },
+    { id: "個人", name: "個人", color: "#FFB86B" },
+    { id: "健康", name: "健康", color: "#3DC97F" },
+    { id: "學習", name: "學習", color: "#9B59B6" }
+  ];
+
+  const taskTypes = [
+    { id: "general", name: "一般任務" },
+    { id: "background", name: "背景任務" },
+    { id: "light", name: "輕型任務" }
   ];
 
   const timeSlots = [
@@ -57,43 +71,57 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
     "深夜 (24:00-6:00)"
   ];
 
-  const createTask = () => {
-    // Trigger: createTask
-    console.log("Trigger: createTask", formData);
-    setDialogOpen(false);
-    // Reset form
-    setFormData({
-      title: "",
-      category: "",
-      estimatedTime: [60],
-      location: "",
-      preferredSlot: "",
-      canOverlap: false,
-      minSplitTime: [30],
-      description: ""
-    });
+  // Load task data when dialog opens
+  useEffect(() => {
+    if (task && open) {
+      setFormData({
+        title: task.title,
+        category: task.category,
+        taskType: task.taskType,
+        estimatedTime: [task.estimatedTime],
+        location: task.location || "",
+        preferredSlot: task.preferredSlot || "",
+        canOverlap: task.canOverlap,
+        description: task.description || ""
+      });
+    }
+  }, [task, open]);
+
+  const saveTask = () => {
+    if (task) {
+      const updatedTask: Task = {
+        ...task,
+        title: formData.title,
+        category: formData.category,
+        taskType: formData.taskType,
+        estimatedTime: formData.estimatedTime[0],
+        location: formData.location,
+        preferredSlot: formData.preferredSlot,
+        canOverlap: formData.canOverlap,
+        description: formData.description
+      };
+      
+      // Trigger: updateTask
+      console.log("Trigger: updateTask", updatedTask);
+      onSave(updatedTask);
+      onOpenChange(false);
+    }
   };
 
   const closeDialog = () => {
-    // Trigger: closeDialog
-    console.log("Trigger: closeDialog");
-    setDialogOpen(false);
+    // Trigger: closeEditDialog
+    console.log("Trigger: closeEditDialog");
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      {open === undefined && (
-        <DialogTrigger asChild>
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            新增任務
-          </Button>
-        </DialogTrigger>
-      )}
-      
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
-          <DialogTitle>新增任務</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Edit className="w-5 h-5" />
+            編輯任務
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
@@ -108,27 +136,45 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
             />
           </div>
 
-          {/* Category Select */}
-          <div className="space-y-2">
-            <Label>類別</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="選擇類別" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: category.color }}
-                      />
-                      {category.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Category and Task Type */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>類別</Label>
+              <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="選擇類別" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: category.color }}
+                        />
+                        {category.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>任務類型</Label>
+              <Select value={formData.taskType} onValueChange={(value: 'general' | 'background' | 'light') => setFormData(prev => ({ ...prev, taskType: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="選擇類型" />
+                </SelectTrigger>
+                <SelectContent>
+                  {taskTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Estimated Time */}
@@ -196,23 +242,6 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
             />
           </div>
 
-          {/* Min Split Time */}
-          <div className="space-y-3">
-            <Label>最小切割時間: {formData.minSplitTime[0]} 分鐘</Label>
-            <Slider
-              value={formData.minSplitTime}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, minSplitTime: value }))}
-              max={120}
-              min={15}
-              step={15}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>15分</span>
-              <span>2小時</span>
-            </div>
-          </div>
-
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">備註</Label>
@@ -235,11 +264,11 @@ export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps) => {
               取消
             </Button>
             <Button
-              onClick={createTask}
+              onClick={saveTask}
               disabled={!formData.title.trim()}
               className="flex-1"
             >
-              建立任務
+              儲存變更
             </Button>
           </div>
         </div>

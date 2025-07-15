@@ -5,6 +5,7 @@ import { PriorityQuadrantView } from "@/components/tasks/PriorityQuadrantView";
 import { TimePeriodSelector } from "@/components/tasks/TimePeriodSelector";
 import { AddCategoryDialog } from "@/components/tasks/AddCategoryDialog";
 import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
+import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
 import { AddCategoryButton } from "@/components/tasks/AddCategoryButton";
 import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import { Button } from "@/components/ui/button";
 export const TasksPage = () => {
   const [activeTab, setActiveTab] = useState("list");
   const [timePeriod, setTimePeriod] = useState("日");
+  const [editingTask, setEditingTask] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const addNewTask = () => {
     // Trigger: addTask
@@ -22,6 +25,29 @@ export const TasksPage = () => {
     setTimePeriod(period);
     // Trigger: onPeriodChange
     console.log("Trigger: onPeriodChange", period);
+  };
+
+  const handleEditTask = (taskId: string) => {
+    // Mock task data - this would come from your task management system
+    const mockTask = {
+      id: taskId,
+      title: "範例任務",
+      category: "工作",
+      taskType: "general" as const,
+      estimatedTime: 60,
+      location: "辦公室",
+      preferredSlot: "早上 (6:00-12:00)",
+      canOverlap: false,
+      description: "這是一個範例任務描述"
+    };
+    setEditingTask(mockTask);
+    setShowEditDialog(true);
+  };
+
+  const handleSaveTask = (task: any) => {
+    // Trigger: saveEditedTask
+    console.log("Trigger: saveEditedTask", task);
+    setEditingTask(null);
   };
 
   return (
@@ -60,7 +86,7 @@ export const TasksPage = () => {
           </TabsList>
           
           <TabsContent value="list" className="mt-6">
-            <TaskListView timePeriod={timePeriod} />
+            <TaskListView timePeriod={timePeriod} onEditTask={handleEditTask} />
           </TabsContent>
           
           <TabsContent value="quadrant" className="mt-6">
@@ -68,6 +94,14 @@ export const TasksPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Task Dialog */}
+      <EditTaskDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        task={editingTask}
+        onSave={handleSaveTask}
+      />
     </div>
   );
 };
