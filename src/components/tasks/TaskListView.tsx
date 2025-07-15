@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { TaskCard } from "./TaskCard";
+import { TaskManageCard } from "./TaskManageCard";
 import { TaskFilter } from "./TaskFilter";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface TaskListViewProps {
   timePeriod: string;
+  onEditTask?: (taskId: string) => void;
 }
 
 interface Task {
@@ -22,7 +23,7 @@ interface Task {
   subtasks?: Task[];
 }
 
-export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
+export const TaskListView = ({ timePeriod, onEditTask }: TaskListViewProps) => {
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
@@ -141,9 +142,10 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
                       {...provided.dragHandleProps}
                       className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
                     >
-                      <TaskCard task={task} onEdit={(taskId) => {
+                      <TaskManageCard task={task} onEdit={(taskId) => {
                         // Trigger: openEditTaskDialog  
                         console.log("Trigger: openEditTaskDialog", taskId);
+                        onEditTask?.(taskId);
                       }} />
                     </div>
                   )}
