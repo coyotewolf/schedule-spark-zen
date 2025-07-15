@@ -54,6 +54,7 @@ All colors MUST be HSL. Supports Light & Dark themes.
     --surface-card: 220 14% 97%;
     --pomodoro-work: 0 74% 64%;
     --pomodoro-break: 146 71% 55%;
+    --timeline-color: 220 13% 91%;
     
     /* Border Radius */
     --radius-sm: 8px;    /* Input fields */
@@ -124,6 +125,7 @@ All colors MUST be HSL. Supports Light & Dark themes.
     --surface-card: 0 0% 17%;
     --pomodoro-work: 0 79% 70%;
     --pomodoro-break: 146 71% 55%;
+    --timeline-color: 0 0% 20%;
     
     /* Sidebar colors for dark theme */
     --sidebar-background: 0 0% 8%;

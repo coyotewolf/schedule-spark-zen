@@ -5,6 +5,7 @@ import { PriorityQuadrantView } from "@/components/tasks/PriorityQuadrantView";
 import { TimePeriodSelector } from "@/components/tasks/TimePeriodSelector";
 import { AddCategoryDialog } from "@/components/tasks/AddCategoryDialog";
 import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
+import { AddCategoryButton } from "@/components/tasks/AddCategoryButton";
 import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -36,7 +37,7 @@ export const TasksPage = () => {
           </div>
           
           <div className="flex gap-2">
-            <AddCategoryDialog />
+            <AddCategoryButton />
             <AddTaskDialog />
           </div>
         </div>
