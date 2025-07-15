@@ -103,18 +103,6 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
 
       {/* Priority Quadrant Board - Dot Mode */}
       <div className="relative bg-card border border-border rounded-xl p-8" style={{ height: '500px' }}>
-        {/* Quadrant Background Colors */}
-        <div className="absolute inset-8">
-          {/* Top half - 緊急 */}
-          <div className="absolute top-0 left-0 right-0 h-1/2" style={{ backgroundColor: '#FFECE8' }}></div>
-          {/* Bottom half - 不緊急 */}
-          <div className="absolute bottom-0 left-0 right-0 h-1/2" style={{ backgroundColor: '#E8F4FF' }}></div>
-          {/* Left half - 不重要 */}
-          <div className="absolute top-0 left-0 bottom-0 w-1/2" style={{ backgroundColor: '#F5F5F5' }}></div>
-          {/* Right half - 重要 */}
-          <div className="absolute top-0 right-0 bottom-0 w-1/2" style={{ backgroundColor: '#F0FFF6' }}></div>
-        </div>
-        
         {/* Axis Labels */}
         {/* Top - 緊急 */}
         <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
@@ -136,12 +124,12 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
           重要
         </div>
 
-        {/* Quadrant Lines - More visible */}
+        {/* Quadrant Lines */}
         <div className="absolute inset-0 m-8">
           {/* Vertical center line */}
-          <div className="absolute left-1/2 top-0 bottom-0 bg-border" style={{ width: '2px', transform: 'translateX(-1px)' }} />
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/50" />
           {/* Horizontal center line */}
-          <div className="absolute top-1/2 left-0 right-0 bg-border" style={{ height: '2px', transform: 'translateY(-1px)' }} />
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-border/50" />
         </div>
 
         {/* Quadrant Labels */}
@@ -166,94 +154,34 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
                       transform: 'translate(-50%, -50%)'
                     }}
                     onClick={() => showMiniTaskInfo(task)}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      let isDragging = false;
-                      const startX = e.clientX;
-                      const startY = e.clientY;
-                      const rect = e.currentTarget.closest('.relative')?.getBoundingClientRect();
-                      
-                      const handleMouseMove = (moveEvent: MouseEvent) => {
-                        if (!rect) return;
-                        
-                        const deltaX = Math.abs(moveEvent.clientX - startX);
-                        const deltaY = Math.abs(moveEvent.clientY - startY);
-                        
-                        if (deltaX > 5 || deltaY > 5) {
-                          isDragging = true;
-                        }
-                        
-                        if (isDragging) {
-                          const relativeX = (moveEvent.clientX - rect.left - 32) / (rect.width - 64);
-                          const relativeY = (moveEvent.clientY - rect.top - 32) / (rect.height - 64);
-                          
-                          const newImportance = Math.max(1, Math.min(5, Math.round(relativeX * 4) + 1));
-                          const newUrgency = Math.max(1, Math.min(5, 5 - Math.round(relativeY * 4)));
-                          
-                          // Update position immediately for visual feedback
-                          const newPosition = getDotPosition(newImportance, newUrgency);
-                          e.currentTarget.style.left = `${newPosition.x}%`;
-                          e.currentTarget.style.top = `${newPosition.y}%`;
-                        }
-                      };
-                      
-                      const handleMouseUp = (upEvent: MouseEvent) => {
-                        if (isDragging && rect) {
-                          const relativeX = (upEvent.clientX - rect.left - 32) / (rect.width - 64);
-                          const relativeY = (upEvent.clientY - rect.top - 32) / (rect.height - 64);
-                          
-                          const newImportance = Math.max(1, Math.min(5, Math.round(relativeX * 4) + 1));
-                          const newUrgency = Math.max(1, Math.min(5, 5 - Math.round(relativeY * 4)));
-                          
-                          updatePriority(task.id, newImportance, newUrgency);
-                        }
-                        
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', handleMouseUp);
-                      };
-                      
-                      document.addEventListener('mousemove', handleMouseMove);
-                      document.addEventListener('mouseup', handleMouseUp);
-                    }}
                   />
                 </PopoverTrigger>
                 
-                 <PopoverContent className="w-64 p-3 rounded-2xl border shadow-lg bg-popover">
-                   <div className="space-y-3">
-                     <h4 className="font-medium text-sm">{task.title}</h4>
-                     
-                     <div className="space-y-2 text-xs text-muted-foreground">
-                       <div className="flex items-center gap-1">
-                         <Clock className="w-3 h-3" />
-                         {task.estimatedTime} 分鐘
-                       </div>
-                       
-                       {task.location && (
-                         <div className="flex items-center gap-1">
-                           <MapPin className="w-3 h-3" />
-                           {task.location}
-                         </div>
-                       )}
-                       
-                       <div className="flex items-center gap-1">
-                         <div 
-                           className="w-3 h-3 rounded-full" 
-                           style={{ backgroundColor: getCategoryColor(task.category) }}
-                         />
-                         {task.category}
-                       </div>
-                       
-                       <div className="grid grid-cols-2 gap-2 text-xs">
-                         <div>
-                           <span className="text-muted-foreground">重要度：</span>
-                           <span className="font-medium">{task.importance}/5</span>
-                         </div>
-                         <div>
-                           <span className="text-muted-foreground">緊急度：</span>
-                           <span className="font-medium">{task.urgency}/5</span>
-                         </div>
-                       </div>
-                     </div>
+                <PopoverContent className="w-64 p-3">
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">{task.title}</h4>
+                    
+                    <div className="space-y-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {task.estimatedTime} 分鐘
+                      </div>
+                      
+                      {task.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {task.location}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-1">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: getCategoryColor(task.category) }}
+                        />
+                        {task.category}
+                      </div>
+                    </div>
 
                     <div className="flex gap-2 pt-2">
                       <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
