@@ -11,8 +11,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export const AddCategoryDialog = () => {
+interface AddCategoryDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const AddCategoryDialog = ({ open, onOpenChange }: AddCategoryDialogProps = {}) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dialogOpen = open !== undefined ? open : isOpen;
+  const setDialogOpen = onOpenChange || setIsOpen;
   const [categoryName, setCategoryName] = useState("");
   const [selectedColor, setSelectedColor] = useState("#5A8BFF");
 
@@ -30,26 +37,28 @@ export const AddCategoryDialog = () => {
   const updateCategoryList = () => {
     // Trigger: updateCategoryList
     console.log("Trigger: updateCategoryList", { categoryName, selectedColor });
-    setIsOpen(false);
+    setDialogOpen(false);
     setCategoryName("");
     setSelectedColor("#5A8BFF");
   };
 
   const closeDialog = () => {
-    setIsOpen(false);
+    setDialogOpen(false);
     setCategoryName("");
     setSelectedColor("#5A8BFF");
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <Plus className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!open && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Plus className="w-4 h-4" />
+          </Button>
+        </DialogTrigger>
+      )}
       
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle>新增類別</DialogTitle>
         </DialogHeader>

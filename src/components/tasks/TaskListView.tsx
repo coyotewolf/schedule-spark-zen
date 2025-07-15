@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { TaskCard } from "./TaskCard";
+import { TaskManageCard } from "./TaskManageCard";
 import { TaskFilter } from "./TaskFilter";
+import { EditTaskDialog } from "./EditTaskDialog";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface TaskListViewProps {
@@ -87,8 +88,28 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
 
   const [filter, setFilter] = useState({
     category: "all",
+    taskType: "all",
     status: "all"
   });
+
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
+  const handleEditTask = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      setEditingTask(task);
+      setShowEditDialog(true);
+    }
+  };
+
+  const handleSaveTask = (updatedTask: Task) => {
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === updatedTask.id ? updatedTask : task
+      )
+    );
+  };
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -109,6 +130,7 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
 
   const filteredTasks = tasks.filter(task => {
     if (filter.category !== "all" && task.category !== filter.category) return false;
+    if (filter.taskType !== "all" && task.taskType !== filter.taskType) return false;
     if (filter.status !== "all" && task.status !== filter.status) return false;
     return true;
   });
@@ -139,7 +161,7 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
                       {...provided.dragHandleProps}
                       className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
                     >
-                      <TaskCard task={task} />
+                      <TaskManageCard task={task} onEdit={handleEditTask} />
                     </div>
                   )}
                 </Draggable>
@@ -155,6 +177,13 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
           <p className="text-muted-foreground">沒有符合條件的任務</p>
         </div>
       )}
+
+      <EditTaskDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        task={editingTask || undefined}
+        onSave={handleSaveTask}
+      />
     </div>
   );
 };

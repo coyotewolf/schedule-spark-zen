@@ -21,8 +21,15 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 
-export const AddTaskDialog = () => {
+interface AddTaskDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const AddTaskDialog = ({ open, onOpenChange }: AddTaskDialogProps = {}) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dialogOpen = open !== undefined ? open : isOpen;
+  const setDialogOpen = onOpenChange || setIsOpen;
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -51,7 +58,7 @@ export const AddTaskDialog = () => {
   const createTask = () => {
     // Trigger: createTask
     console.log("Trigger: createTask", formData);
-    setIsOpen(false);
+    setDialogOpen(false);
     // Reset form
     setFormData({
       title: "",
@@ -68,19 +75,21 @@ export const AddTaskDialog = () => {
   const closeDialog = () => {
     // Trigger: closeDialog
     console.log("Trigger: closeDialog");
-    setIsOpen(false);
+    setDialogOpen(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="w-4 h-4 mr-2" />
-          新增任務
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!open && (
+        <DialogTrigger asChild>
+          <Button size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            新增任務
+          </Button>
+        </DialogTrigger>
+      )}
       
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle>新增任務</DialogTitle>
         </DialogHeader>

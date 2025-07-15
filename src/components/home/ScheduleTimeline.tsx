@@ -13,6 +13,20 @@ interface TimelineTask {
 }
 
 export const ScheduleTimeline = () => {
+  // Generate hourly time labels
+  const generateHourlyLabels = () => {
+    const hours = [];
+    for (let i = 8; i <= 22; i++) {
+      hours.push({
+        hour: i,
+        label: `${i.toString().padStart(2, '0')}:00`
+      });
+    }
+    return hours;
+  };
+
+  const hourlyLabels = generateHourlyLabels();
+
   // {{API}} - This data will come from API
   const todayTasks: TimelineTask[] = [
     {
@@ -97,32 +111,43 @@ export const ScheduleTimeline = () => {
 
   return (
     <div className="relative">
+      {/* Hourly Time Labels */}
+      <div className="absolute left-0 top-0 w-12 text-xs text-muted-foreground">
+        {hourlyLabels.map((hour) => (
+          <div
+            key={hour.hour}
+            className="absolute font-medium text-right pr-2"
+            style={{ top: `${(hour.hour - 8) * 80}px` }}
+          >
+            {hour.label}
+          </div>
+        ))}
+      </div>
+      
       {/* Vertical Timeline */}
-      <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col">
-        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border"></div>
-        {todayTasks.map((task, index) => {
+      <div className="absolute left-12 top-0 bottom-0 w-0.5" style={{ background: 'hsl(var(--border))' }}>
+        {todayTasks.map((task) => {
           const hour = parseInt(task.time.split(':')[0]);
-          const topPosition = ((hour - 8) * 80) + 40; // Assuming 8AM start, 80px per hour
+          const minute = parseInt(task.time.split(':')[1]);
+          const topPosition = ((hour - 8) * 80) + (minute * 80 / 60);
           
           return (
             <div
               key={`dot-${task.id}`}
               className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background"
-              style={{ top: `${topPosition}px`, left: '14px' }}
+              style={{ 
+                top: `${topPosition + 20}px`, // Align with card center
+                left: '-6px'
+              }}
             />
           );
         })}
       </div>
 
-      {/* Time Labels and Task Cards */}
-      <div className="ml-12 space-y-4">
+      {/* Task Cards */}
+      <div className="ml-16 space-y-3">
         {todayTasks.map((task, index) => (
           <div key={task.id} className="relative">
-            {/* Time Label */}
-            <div className="absolute -left-12 top-4 w-10 text-xs font-medium text-muted-foreground text-right">
-              {task.time}
-            </div>
-            
             {/* Travel Gap Indicator */}
             {task.travelTime && index > 0 && (
               <div className="mb-2 text-caption text-muted-foreground bg-warning/10 px-3 py-1 rounded-lg inline-block">
@@ -136,6 +161,7 @@ export const ScheduleTimeline = () => {
               className="bg-card/95 p-4 rounded-lg cursor-pointer hover:bg-card transition-colors border-0 shadow-none"
               onClick={() => openTaskDetail(task.id)}
             >
+              {/* Header: Task title and Status Badge */}
               <div className="flex items-start justify-between mb-2">
                 <h3 className={`text-body font-medium ${
                   task.completed ? 'line-through text-muted-foreground' : ''
@@ -154,6 +180,7 @@ export const ScheduleTimeline = () => {
                 </div>
               </div>
               
+              {/* Second line: Location and Time */}
               <div className="flex items-center gap-4 text-caption text-muted-foreground">
                 {task.location && (
                   <div className="flex items-center gap-1">

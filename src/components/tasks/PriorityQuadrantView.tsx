@@ -1,20 +1,18 @@
 import { useState } from "react";
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Edit, Check, MapPin, Clock } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface Task {
   id: string;
   title: string;
   category: string;
-  importance: number; // 1-5
-  urgency: number; // 1-5
+  taskType: 'general' | 'background' | 'light';
   estimatedTime: number;
   location?: string;
+  preferredSlot?: string;
+  canOverlap: boolean;
+  status: 'pending' | 'in_progress' | 'completed';
+  importance: number; // 1-5 scale
+  urgency: number; // 1-5 scale
 }
 
 interface PriorityQuadrantViewProps {
@@ -22,200 +20,192 @@ interface PriorityQuadrantViewProps {
 }
 
 export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) => {
-  // Mock tasks data
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
       title: "完成專案提案",
       category: "工作",
-      importance: 5,
-      urgency: 5,
+      taskType: "general",
       estimatedTime: 120,
-      location: "辦公室"
+      location: "辦公室",
+      preferredSlot: "上午",
+      canOverlap: false,
+      status: "pending",
+      importance: 5,
+      urgency: 4
     },
     {
-      id: "2", 
-      title: "學習新技能",
-      category: "學習",
-      importance: 4,
-      urgency: 2,
-      estimatedTime: 90
+      id: "2",
+      title: "回覆客戶郵件",
+      category: "工作",
+      taskType: "light",
+      estimatedTime: 15,
+      canOverlap: true,
+      status: "pending",
+      importance: 3,
+      urgency: 5
     },
     {
       id: "3",
-      title: "回覆客戶郵件",
-      category: "工作", 
+      title: "檢查系統監控",
+      category: "技術",
+      taskType: "background",
+      estimatedTime: 10,
+      canOverlap: true,
+      status: "pending",
       importance: 2,
-      urgency: 4,
-      estimatedTime: 30,
-      location: "辦公室"
+      urgency: 2
     },
     {
       id: "4",
-      title: "整理桌面",
-      category: "個人",
-      importance: 1,
-      urgency: 1,
-      estimatedTime: 15
+      title: "學習新技術",
+      category: "學習",
+      taskType: "general",
+      estimatedTime: 60,
+      canOverlap: false,
+      status: "pending",
+      importance: 4,
+      urgency: 1
     }
   ]);
 
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
 
-  const updatePriority = (taskId: string, newImportance: number, newUrgency: number) => {
-    // Trigger: updatePriority
-    console.log("Trigger: updatePriority", { taskId, newImportance, newUrgency });
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { ...task, importance: newImportance, urgency: newUrgency }
-        : task
-    ));
-  };
+    const { draggableId } = result;
+    const task = tasks.find(t => t.id === draggableId);
+    if (!task) return;
 
-  const showMiniTaskInfo = (task: Task) => {
-    // Trigger: showMiniTaskInfo
-    console.log("Trigger: showMiniTaskInfo", task.id);
-    setSelectedTask(task);
-  };
+    // Calculate new importance and urgency based on drop position
+    const rect = document.getElementById('matrix-container')?.getBoundingClientRect();
+    if (!rect) return;
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      "工作": "#5A8BFF",
-      "學習": "#9B59B6",
-      "個人": "#FFB86B",
-      "健康": "#3DC97F"
-    };
-    return colors[category as keyof typeof colors] || "#60666C";
-  };
+    const x = result.destination.index % 100; // Mock position
+    const y = Math.floor(result.destination.index / 100);
+    
+    const newImportance = Math.max(1, Math.min(5, Math.round((x / 100) * 5)));
+    const newUrgency = Math.max(1, Math.min(5, Math.round(((100 - y) / 100) * 5)));
 
-  // Calculate dot position based on importance (x-axis) and urgency (y-axis)
-  const getDotPosition = (importance: number, urgency: number) => {
-    const x = ((importance - 1) / 4) * 100; // Convert 1-5 to 0-100%
-    const y = 100 - ((urgency - 1) / 4) * 100; // Invert Y axis for visual clarity
-    return { x, y };
+    const updatedTasks = tasks.map(t => 
+      t.id === draggableId 
+        ? { ...t, importance: newImportance, urgency: newUrgency }
+        : t
+    );
+
+    setTasks(updatedTasks);
+    
+    // Trigger: updateTaskImportanceUrgency
+    console.log("Trigger: updateTaskImportanceUrgency", {
+      taskId: draggableId,
+      importance: newImportance,
+      urgency: newUrgency
+    });
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-h3 font-semibold text-center w-full">艾森豪矩陣</h3>
+      <div className="text-center">
+        <h2 className="text-h2 mb-2">艾森豪矩陣</h2>
+        <p className="text-caption text-muted-foreground">
+          根據重要性和緊急性分類任務
+        </p>
       </div>
 
-      {/* Priority Quadrant Board - Dot Mode */}
-      <div className="relative bg-card border border-border rounded-xl p-8" style={{ height: '500px' }}>
-        {/* Axis Labels */}
-        {/* Top - 緊急 */}
-        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
-          緊急
-        </div>
-        
-        {/* Bottom - 不緊急 */}
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
-          不緊急
-        </div>
-        
-        {/* Left - 不重要 */}
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm font-medium text-muted-foreground origin-center">
-          不重要
-        </div>
-        
-        {/* Right - 重要 */}
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-sm font-medium text-muted-foreground origin-center">
-          重要
-        </div>
+      {/* Matrix Container */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div 
+          id="matrix-container"
+          className="relative w-full h-96 rounded-lg overflow-hidden"
+          style={{
+            background: `
+              linear-gradient(to right, 
+                hsl(var(--muted)) 0%, 
+                hsl(var(--muted)) 50%, 
+                hsl(146, 30%, 95%) 50%, 
+                hsl(146, 30%, 95%) 100%
+              ),
+              linear-gradient(to bottom,
+                hsl(0, 30%, 95%) 0%,
+                hsl(0, 30%, 95%) 50%,
+                hsl(210, 30%, 95%) 50%,
+                hsl(210, 30%, 95%) 100%
+              )
+            `
+          }}
+        >
+          {/* Axis Lines - More prominent */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-border transform -translate-x-0.5 z-10"></div>
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-border transform -translate-y-0.5 z-10"></div>
 
-        {/* Quadrant Lines */}
-        <div className="absolute inset-0 m-8">
-          {/* Vertical center line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/50" />
-          {/* Horizontal center line */}
-          <div className="absolute top-1/2 left-0 right-0 h-px bg-border/50" />
-        </div>
+          {/* Axis Labels - Centered on axes */}
+          <div className="absolute left-1/2 top-6 text-sm font-medium text-foreground transform -translate-x-1/2 z-20">
+            緊急
+          </div>
+          <div className="absolute left-1/2 bottom-6 text-sm font-medium text-foreground transform -translate-x-1/2 z-20">
+            不緊急
+          </div>
+          <div className="absolute left-6 top-1/2 text-sm font-medium text-foreground transform -translate-y-1/2 z-20">
+            不重要
+          </div>
+          <div className="absolute right-6 top-1/2 text-sm font-medium text-foreground transform -translate-y-1/2 z-20">
+            重要
+          </div>
 
-        {/* Quadrant Labels */}
-        <div className="absolute top-4 left-4 text-xs text-destructive font-medium">重要且緊急</div>
-        <div className="absolute top-4 right-4 text-xs text-primary font-medium">重要不緊急</div>
-        <div className="absolute bottom-4 left-4 text-xs text-warning font-medium">不重要但緊急</div>
-        <div className="absolute bottom-4 right-4 text-xs text-muted-foreground font-medium">不重要不緊急</div>
-
-        {/* Task Dots */}
-        <div className="absolute inset-0 m-8">
-          {tasks.map((task) => {
-            const position = getDotPosition(task.importance, task.urgency);
-            return (
-              <Popover key={task.id}>
-                <PopoverTrigger asChild>
-                  <button
-                    className="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg hover:scale-125 transition-all duration-200 cursor-pointer"
-                    style={{
-                      left: `${position.x}%`,
-                      top: `${position.y}%`,
-                      backgroundColor: getCategoryColor(task.category),
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                    onClick={() => showMiniTaskInfo(task)}
-                  />
-                </PopoverTrigger>
-                
-                <PopoverContent className="w-64 p-3">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm">{task.title}</h4>
-                    
-                    <div className="space-y-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {task.estimatedTime} 分鐘
-                      </div>
-                      
-                      {task.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {task.location}
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getCategoryColor(task.category) }}
+          {/* Draggable Task Dots */}
+          <Droppable droppableId="matrix" type="task">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="absolute inset-0"
+              >
+                {tasks.map((task, index) => {
+                  const x = (task.importance / 5) * 100; // Convert 1-5 to 0-100%
+                  const y = 100 - (task.urgency / 5) * 100; // Invert Y axis
+                  
+                  return (
+                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`absolute w-3 h-3 bg-primary rounded-full cursor-grab transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-125 z-30 ${
+                            snapshot.isDragging ? 'shadow-lg scale-125' : ''
+                          }`}
+                          style={{
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            ...provided.draggableProps.style
+                          }}
+                          title={task.title}
                         />
-                        {task.category}
-                      </div>
-                    </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </div>
+      </DragDropContext>
 
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
-                        <Edit className="w-3 h-3 mr-1" />
-                        編輯
-                      </Button>
-                      <Button size="sm" className="h-7 px-2 text-xs">
-                        <Check className="w-3 h-3 mr-1" />
-                        完成
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            );
-          })}
-        </div>
-
-        {/* Scale indicators */}
-        <div className="absolute bottom-0 left-8 right-8 flex justify-between text-xs text-muted-foreground">
-          <span>1</span>
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
-          <span>5</span>
-        </div>
-        
-        <div className="absolute top-8 bottom-8 left-0 flex flex-col-reverse justify-between text-xs text-muted-foreground">
-          <span>1</span>
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
-          <span>5</span>
-        </div>
+      {/* Task List */}
+      <div className="grid grid-cols-1 gap-2">
+        {tasks.map((task) => (
+          <div key={task.id} className="flex items-center justify-between p-3 bg-card rounded-lg border">
+            <div>
+              <h4 className="font-medium">{task.title}</h4>
+              <p className="text-sm text-muted-foreground">
+                重要度: {task.importance} | 緊急度: {task.urgency}
+              </p>
+            </div>
+            <span className="text-xs bg-muted px-2 py-1 rounded">
+              {task.category}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

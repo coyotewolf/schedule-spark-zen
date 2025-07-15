@@ -5,12 +5,14 @@ import { PriorityQuadrantView } from "@/components/tasks/PriorityQuadrantView";
 import { TimePeriodSelector } from "@/components/tasks/TimePeriodSelector";
 import { AddCategoryDialog } from "@/components/tasks/AddCategoryDialog";
 import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
+import { AddCategoryButton } from "@/components/tasks/AddCategoryButton";
 import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const TasksPage = () => {
   const [activeTab, setActiveTab] = useState("list");
   const [timePeriod, setTimePeriod] = useState("日");
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
 
   const addNewTask = () => {
     // Trigger: addTask
@@ -36,7 +38,7 @@ export const TasksPage = () => {
           </div>
           
           <div className="flex gap-2">
-            <AddCategoryDialog />
+            <AddCategoryButton onClick={() => setShowAddCategoryDialog(true)} />
             <AddTaskDialog />
           </div>
         </div>
@@ -67,6 +69,11 @@ export const TasksPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AddCategoryDialog 
+        open={showAddCategoryDialog}
+        onOpenChange={setShowAddCategoryDialog}
+      />
     </div>
   );
 };
