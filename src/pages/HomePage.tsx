@@ -56,7 +56,7 @@ export const HomePage = () => {
       </header>
 
       {/* Main Content */}
-      <div className="space-y-6 p-4 pb-24">
+      <div className="space-y-8 p-4 pb-24">
         {/* Daily Quote */}
         <DailyQuote />
         
@@ -64,13 +64,13 @@ export const HomePage = () => {
         <QuickActionBar />
         
         {/* Today's Schedule Timeline */}
-        <section>
+        <section className="space-y-4">
           <h2 className="text-h3 mb-4">今日行程</h2>
           <ScheduleTimeline />
         </section>
         
         {/* Weekly Completion Chart */}
-        <section>
+        <section className="space-y-4">
           <h2 className="text-h3 mb-4">本週完成率</h2>
           <WeeklyCompletionChart />
         </section>

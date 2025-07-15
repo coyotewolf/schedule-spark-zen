@@ -21,6 +21,7 @@ interface PriorityQuadrantViewProps {
 
 export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) => {
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
+  const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
@@ -87,6 +88,52 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
     setSelectedTask(selectedTask === taskId ? null : taskId);
   };
 
+  const handleDragStart = (taskId: string) => {
+    setDraggedTask(taskId);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    
+    if (!draggedTask) return;
+
+    const matrixContainer = document.getElementById('matrix-container');
+    if (!matrixContainer) return;
+
+    const rect = matrixContainer.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    // Convert pixel coordinates to percentages
+    const xPercent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const yPercent = Math.max(0, Math.min(100, (y / rect.height) * 100));
+
+    // Convert percentages to importance (1-5) and urgency (1-5)
+    // X axis represents importance (left = 1, right = 5)
+    const newImportance = Math.max(1, Math.min(5, Math.round((xPercent / 100) * 4) + 1));
+    // Y axis represents urgency (top = 5, bottom = 1) - inverted
+    const newUrgency = Math.max(1, Math.min(5, Math.round(((100 - yPercent) / 100) * 4) + 1));
+
+    setTasks(prev => prev.map(task => 
+      task.id === draggedTask 
+        ? { ...task, importance: newImportance, urgency: newUrgency }
+        : task
+    ));
+
+    setDraggedTask(null);
+
+    // Trigger: updateTaskImportanceUrgency
+    console.log("Trigger: updateTaskImportanceUrgency", {
+      taskId: draggedTask,
+      importance: newImportance,
+      urgency: newUrgency
+    });
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault(); // Allow drop
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -100,6 +147,8 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
       <div 
         id="matrix-container"
         className="relative w-full h-96 rounded-lg overflow-hidden border border-border"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
         style={{
           background: `
             linear-gradient(to right, 
@@ -149,7 +198,11 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
                 onOpenChange={(open) => setSelectedTask(open ? task.id : null)}
               >
                 <div
-                  className="absolute w-4 h-4 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-125 z-30 border-2 border-white shadow-lg"
+                  draggable
+                  onDragStart={() => handleDragStart(task.id)}
+                  className={`absolute w-4 h-4 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-125 z-30 border-2 border-white shadow-lg ${
+                    draggedTask === task.id ? 'opacity-50 scale-110' : ''
+                  }`}
                   style={{
                     left: `${x}%`,
                     top: `${y}%`,
