@@ -9,8 +9,9 @@ export const QuickActionBar = ({ onVoiceInput }: QuickActionBarProps) => {
   const navigate = useNavigate();
 
   const addTask = () => {
-    // Trigger: addTaskDialog - will trigger AddTaskDialog
+    // Trigger: addTaskDialog
     console.log("Trigger: addTaskDialog");
+    navigate("/tasks?action=add");
   };
 
   const startPomodoro = () => {
@@ -64,15 +65,15 @@ export const QuickActionBar = ({ onVoiceInput }: QuickActionBarProps) => {
           onClick={action.action}
           className="
             flex items-center justify-center 
-            w-10 h-10 rounded-lg
-            bg-primary/12 hover:bg-primary/20
-            text-primary
+            h-11 rounded-xl
+            bg-secondary/20 hover:bg-secondary/30
+            text-secondary-foreground
             transition-all duration-200 
             hover:scale-105
             active:scale-95
           "
         >
-          <action.icon className="w-4 h-4" />
+          <action.icon className="w-5 h-5" />
         </button>
       ))}
     </div>

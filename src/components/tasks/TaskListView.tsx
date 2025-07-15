@@ -87,7 +87,6 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
 
   const [filter, setFilter] = useState({
     category: "all",
-    taskType: "all",
     status: "all"
   });
 
@@ -110,7 +109,6 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
 
   const filteredTasks = tasks.filter(task => {
     if (filter.category !== "all" && task.category !== filter.category) return false;
-    if (filter.taskType !== "all" && task.taskType !== filter.taskType) return false;
     if (filter.status !== "all" && task.status !== filter.status) return false;
     return true;
   });
@@ -141,10 +139,7 @@ export const TaskListView = ({ timePeriod }: TaskListViewProps) => {
                       {...provided.dragHandleProps}
                       className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
                     >
-                      <TaskCard task={task} onEdit={(taskId) => {
-                        // Trigger: openEditTaskDialog  
-                        console.log("Trigger: openEditTaskDialog", taskId);
-                      }} />
+                      <TaskCard task={task} />
                     </div>
                   )}
                 </Draggable>
