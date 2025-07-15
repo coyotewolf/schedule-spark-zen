@@ -76,57 +76,66 @@ export const ScheduleTimeline = () => {
     }
   };
 
+  // Generate hourly time markers  
+  const timeMarkers = Array.from({ length: 12 }, (_, i) => {
+    const hour = i + 8; // Start from 8:00 AM
+    return `${hour.toString().padStart(2, '0')}:00`;
+  });
+
   return (
-    <div className="space-y-3">
-      {todayTasks.map((task, index) => (
-        <div key={task.id}>
-          {/* Travel Time Gap */}
-          {task.travelTime && index > 0 && (
-            <div className="flex items-center gap-2 py-2 text-caption text-muted-foreground">
-              <Car className="w-4 h-4" />
-              <span>移動時間 {task.travelTime} 分鐘</span>
-              <ArrowRight className="w-3 h-3" />
-            </div>
-          )}
-          
-          {/* Task Card */}
-          <div 
-            onClick={() => openTaskDetail(task.id)}
-            className={`app-card p-4 cursor-pointer interactive-hover interactive-press ${
-              task.completed ? 'opacity-60' : ''
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              {/* Time */}
-              <div className="flex flex-col items-center min-w-[60px]">
-                <Clock className="w-4 h-4 text-muted-foreground mb-1" />
-                <span className="text-caption font-medium">{task.time}</span>
+    <div className="p-4">
+      <div className="flex gap-4">
+        {/* Vertical Time Axis */}
+        <div className="w-10 flex-shrink-0">
+          <div className="space-y-16">
+            {timeMarkers.map((time) => (
+              <div key={time} className="text-xs text-muted-foreground font-medium">
+                {time}
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Schedule Cards */}
+        <div className="flex-1 space-y-3">
+          {todayTasks.map((task, index) => (
+            <div key={task.id} className="relative">
+              {/* Travel Time Gap */}
+              {task.travelTime && index > 0 && (
+                <div className="mb-2">
+                  <span className="inline-block px-2 py-1 text-xs bg-warning/10 text-warning border border-warning/20 rounded-full">
+                    <Car className="w-3 h-3 inline mr-1" />
+                    移動時間 {task.travelTime} 分鐘
+                  </span>
+                </div>
+              )}
               
-              {/* Content */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className={`text-body font-medium ${
-                    task.completed ? 'line-through text-muted-foreground' : ''
-                  }`}>
-                    {task.title}
-                  </h3>
-                  
-                  {/* Category Badge */}
-                  <span className={`px-2 py-1 rounded-full text-xs ${getCategoryBadgeClass(task.category)}`}>
+              {/* Schedule Task Card - No Border */}
+              <div 
+                className="py-3 px-4 rounded-xl bg-surface/95 backdrop-blur-sm cursor-pointer transition-all duration-200 hover:bg-surface hover:scale-[1.02]"
+                onClick={() => openTaskDetail(task.id)}
+              >
+                {/* Task Title */}
+                <h4 className={`text-body font-medium mb-1 ${
+                  task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+                }`}>
+                  {task.title}
+                </h4>
+                
+                {/* Location */}
+                {task.location && (
+                  <div className="flex items-center gap-1 text-caption text-muted-foreground mb-2">
+                    <MapPin className="w-3 h-3" />
+                    {task.location}
+                  </div>
+                )}
+                
+                {/* Category Badge & Status */}
+                <div className="flex items-center gap-2">
+                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${getCategoryBadgeClass(task.category)}`}>
                     {task.category === 'general' ? '一般任務' : 
                      task.category === 'background' ? '背景進行' : '輕型任務'}
                   </span>
-                </div>
-                
-                {/* Location & Overlap Info */}
-                <div className="flex items-center gap-4 text-caption text-muted-foreground">
-                  {task.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      <span>{task.location}</span>
-                    </div>
-                  )}
                   
                   {task.canOverlap && (
                     <span className="px-2 py-0.5 bg-secondary/20 text-secondary rounded-full text-xs">
@@ -142,9 +151,9 @@ export const ScheduleTimeline = () => {
                 </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 };

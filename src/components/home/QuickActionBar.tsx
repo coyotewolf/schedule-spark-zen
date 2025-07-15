@@ -35,52 +35,45 @@ export const QuickActionBar = ({ onVoiceInput }: QuickActionBarProps) => {
   const quickActions = [
     {
       id: "addTask",
-      label: "新增任務",
       icon: Plus,
-      action: addTask,
-      className: "bg-primary hover:bg-primary/80 text-primary-foreground"
+      action: addTask
     },
     {
       id: "voiceInput", 
-      label: "語音輸入",
       icon: Mic,
-      action: handleVoiceInput,
-      className: "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+      action: handleVoiceInput
     },
     {
       id: "startPomodoro",
-      label: "番茄鐘",
       icon: Timer,
-      action: startPomodoro,
-      className: "bg-success hover:bg-success/80 text-success-foreground"
+      action: startPomodoro
     },
     {
       id: "openPlanner",
-      label: "規劃",
       icon: Calendar,
-      action: openPlanner,
-      className: "bg-muted hover:bg-muted/80 text-muted-foreground"
+      action: openPlanner
     }
   ];
 
   return (
-    <div className="app-card p-4">
-      <h3 className="text-h3 mb-4">快速操作</h3>
-      
-      <div className="grid grid-cols-2 gap-3">
+    <div className="px-4 py-3">
+      <div className="flex justify-between items-center gap-4">
         {quickActions.map((action) => (
           <button
             key={action.id}
             onClick={action.action}
-            className={`
-              flex flex-col items-center justify-center p-4 rounded-xl 
+            className="
+              flex items-center justify-center 
+              w-14 h-14 rounded-2xl
+              bg-surface/95 backdrop-blur-sm
+              border border-border/20
               transition-all duration-200 
               interactive-hover interactive-press
-              ${action.className}
-            `}
+              hover:bg-surface hover:scale-105
+              active:scale-95
+            "
           >
-            <action.icon className="w-6 h-6 mb-2" />
-            <span className="text-caption font-medium">{action.label}</span>
+            <action.icon className="w-6 h-6 text-foreground" />
           </button>
         ))}
       </div>

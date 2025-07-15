@@ -3,7 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskListView } from "@/components/tasks/TaskListView";
 import { PriorityQuadrantView } from "@/components/tasks/PriorityQuadrantView";
 import { TimePeriodSelector } from "@/components/tasks/TimePeriodSelector";
-import { Plus } from "lucide-react";
+import { AddCategoryDialog } from "@/components/tasks/AddCategoryDialog";
+import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
+import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const TasksPage = () => {
@@ -33,10 +35,10 @@ export const TasksPage = () => {
             </p>
           </div>
           
-          <Button onClick={addNewTask} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            新增任務
-          </Button>
+          <div className="flex gap-2">
+            <AddCategoryDialog />
+            <AddTaskDialog />
+          </div>
         </div>
       </header>
 

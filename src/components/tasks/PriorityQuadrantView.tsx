@@ -1,12 +1,20 @@
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { useState } from "react";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Edit, Check, MapPin, Clock } from "lucide-react";
 
 interface Task {
   id: string;
   title: string;
-  category: 'general' | 'background' | 'light';
-  importance: number;
-  urgency: number;
+  category: string;
+  importance: number; // 1-5
+  urgency: number; // 1-5
+  estimatedTime: number;
+  location?: string;
 }
 
 interface PriorityQuadrantViewProps {
@@ -14,188 +22,188 @@ interface PriorityQuadrantViewProps {
 }
 
 export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) => {
-  const [tasks, setTasks] = useState<{ [key: string]: Task[] }>({
-    'important-urgent': [
-      { id: '1', title: '緊急客戶問題', category: 'general', importance: 5, urgency: 5 }
-    ],
-    'important-not-urgent': [
-      { id: '2', title: '專案規劃', category: 'general', importance: 5, urgency: 2 }
-    ],
-    'not-important-urgent': [
-      { id: '3', title: '回覆郵件', category: 'light', importance: 2, urgency: 4 }
-    ],
-    'not-important-not-urgent': [
-      { id: '4', title: '整理檔案', category: 'light', importance: 1, urgency: 1 }
-    ]
-  });
-
-  const quadrants = [
+  // Mock tasks data
+  const [tasks, setTasks] = useState<Task[]>([
     {
-      id: 'important-urgent',
-      title: '重要緊急',
-      subtitle: 'Do First',
-      className: 'badge-important-urgent',
-      description: '立即處理的任務'
+      id: "1",
+      title: "完成專案提案",
+      category: "工作",
+      importance: 5,
+      urgency: 5,
+      estimatedTime: 120,
+      location: "辦公室"
     },
     {
-      id: 'important-not-urgent', 
-      title: '重要不緊急',
-      subtitle: 'Schedule',
-      className: 'badge-important-not-urgent',
-      description: '規劃時間處理'
+      id: "2", 
+      title: "學習新技能",
+      category: "學習",
+      importance: 4,
+      urgency: 2,
+      estimatedTime: 90
     },
     {
-      id: 'not-important-urgent',
-      title: '不重要緊急', 
-      subtitle: 'Delegate',
-      className: 'badge-not-important-urgent',
-      description: '考慮委派給他人'
+      id: "3",
+      title: "回覆客戶郵件",
+      category: "工作", 
+      importance: 2,
+      urgency: 4,
+      estimatedTime: 30,
+      location: "辦公室"
     },
     {
-      id: 'not-important-not-urgent',
-      title: '不重要不緊急',
-      subtitle: 'Eliminate', 
-      className: 'badge-not-important-not-urgent',
-      description: '減少或消除這類活動'
+      id: "4",
+      title: "整理桌面",
+      category: "個人",
+      importance: 1,
+      urgency: 1,
+      estimatedTime: 15
     }
-  ];
+  ]);
 
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
-    
-    if (!destination) return;
-    
-    if (source.droppableId === destination.droppableId) {
-      // Same quadrant reordering
-      const quadrantTasks = Array.from(tasks[source.droppableId]);
-      const [reorderedTask] = quadrantTasks.splice(source.index, 1);
-      quadrantTasks.splice(destination.index, 0, reorderedTask);
-      
-      setTasks({
-        ...tasks,
-        [source.droppableId]: quadrantTasks
-      });
-    } else {
-      // Move between quadrants
-      const sourceTasks = Array.from(tasks[source.droppableId]);
-      const destTasks = Array.from(tasks[destination.droppableId]);
-      const [movedTask] = sourceTasks.splice(source.index, 1);
-      
-      // Update task priority based on destination quadrant
-      const updatedTask = { ...movedTask };
-      switch (destination.droppableId) {
-        case 'important-urgent':
-          updatedTask.importance = 5;
-          updatedTask.urgency = 5;
-          break;
-        case 'important-not-urgent':
-          updatedTask.importance = 5;
-          updatedTask.urgency = 2;
-          break;
-        case 'not-important-urgent':
-          updatedTask.importance = 2;
-          updatedTask.urgency = 4;
-          break;
-        case 'not-important-not-urgent':
-          updatedTask.importance = 1;
-          updatedTask.urgency = 1;
-          break;
-      }
-      
-      destTasks.splice(destination.index, 0, updatedTask);
-      
-      setTasks({
-        ...tasks,
-        [source.droppableId]: sourceTasks,
-        [destination.droppableId]: destTasks
-      });
-      
-      // Trigger: updatePriority
-      console.log("Trigger: updatePriority", {
-        taskId: movedTask.id,
-        importance: updatedTask.importance,
-        urgency: updatedTask.urgency,
-        quadrant: destination.droppableId
-      });
-    }
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  const updatePriority = (taskId: string, newImportance: number, newUrgency: number) => {
+    // Trigger: updatePriority
+    console.log("Trigger: updatePriority", { taskId, newImportance, newUrgency });
+    setTasks(prev => prev.map(task => 
+      task.id === taskId 
+        ? { ...task, importance: newImportance, urgency: newUrgency }
+        : task
+    ));
+  };
+
+  const showMiniTaskInfo = (task: Task) => {
+    // Trigger: showMiniTaskInfo
+    console.log("Trigger: showMiniTaskInfo", task.id);
+    setSelectedTask(task);
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      "工作": "#5A8BFF",
+      "學習": "#9B59B6",
+      "個人": "#FFB86B",
+      "健康": "#3DC97F"
+    };
+    return colors[category as keyof typeof colors] || "#60666C";
+  };
+
+  // Calculate dot position based on importance (x-axis) and urgency (y-axis)
+  const getDotPosition = (importance: number, urgency: number) => {
+    const x = ((importance - 1) / 4) * 100; // Convert 1-5 to 0-100%
+    const y = 100 - ((urgency - 1) / 4) * 100; // Invert Y axis for visual clarity
+    return { x, y };
   };
 
   return (
-    <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-h2 font-semibold mb-2">艾森豪威爾決策矩陣</h2>
-        <p className="text-caption text-muted-foreground">
-          拖曳任務到適當的象限來設定優先順序
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-h3 font-semibold">優先順序矩陣 - {timePeriod}</h3>
       </div>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {quadrants.map((quadrant) => (
-            <div key={quadrant.id} className="space-y-3">
-              {/* Quadrant Header */}
-              <div className={`app-card p-4 ${quadrant.className}`}>
-                <h3 className="text-h3 font-semibold">{quadrant.title}</h3>
-                <p className="text-caption opacity-80">{quadrant.subtitle}</p>
-                <p className="text-xs mt-1 opacity-70">{quadrant.description}</p>
-              </div>
+      {/* Priority Quadrant Board - Dot Mode */}
+      <div className="relative bg-card border border-border rounded-xl p-8" style={{ height: '500px' }}>
+        {/* Axis Labels */}
+        <div className="absolute -left-16 top-1/2 -translate-y-1/2 -rotate-90 text-sm font-medium text-muted-foreground">
+          緊急程度
+        </div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm font-medium text-muted-foreground">
+          重要程度
+        </div>
 
-              {/* Tasks Droppable Area */}
-              <Droppable droppableId={quadrant.id}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={`min-h-[200px] p-3 border-2 border-dashed rounded-xl transition-colors ${
-                      snapshot.isDraggingOver 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border bg-background'
-                    }`}
-                  >
-                    <div className="space-y-2">
-                      {tasks[quadrant.id].map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`app-card p-3 cursor-grab active:cursor-grabbing ${
-                                snapshot.isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-                              }`}
-                            >
-                              <h4 className="text-body font-medium">{task.title}</h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-muted-foreground">
-                                  重要: {task.importance} | 緊急: {task.urgency}
-                                </span>
-                                <span className={`px-2 py-0.5 rounded-full text-xs ${
-                                  task.category === 'general' ? 'badge-general' :
-                                  task.category === 'background' ? 'badge-background' : 'badge-light'
-                                }`}>
-                                  {task.category === 'general' ? '一般' : 
-                                   task.category === 'background' ? '背景' : '輕型'}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+        {/* Quadrant Lines */}
+        <div className="absolute inset-0 m-8">
+          {/* Vertical center line */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/50" />
+          {/* Horizontal center line */}
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-border/50" />
+        </div>
+
+        {/* Quadrant Labels */}
+        <div className="absolute top-4 left-4 text-xs text-destructive font-medium">重要且緊急</div>
+        <div className="absolute top-4 right-4 text-xs text-primary font-medium">重要不緊急</div>
+        <div className="absolute bottom-4 left-4 text-xs text-warning font-medium">不重要但緊急</div>
+        <div className="absolute bottom-4 right-4 text-xs text-muted-foreground font-medium">不重要不緊急</div>
+
+        {/* Task Dots */}
+        <div className="absolute inset-0 m-8">
+          {tasks.map((task) => {
+            const position = getDotPosition(task.importance, task.urgency);
+            return (
+              <Popover key={task.id}>
+                <PopoverTrigger asChild>
+                  <button
+                    className="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg hover:scale-125 transition-all duration-200 cursor-pointer"
+                    style={{
+                      left: `${position.x}%`,
+                      top: `${position.y}%`,
+                      backgroundColor: getCategoryColor(task.category),
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                    onClick={() => showMiniTaskInfo(task)}
+                  />
+                </PopoverTrigger>
+                
+                <PopoverContent className="w-64 p-3">
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">{task.title}</h4>
+                    
+                    <div className="space-y-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {task.estimatedTime} 分鐘
+                      </div>
                       
-                      {tasks[quadrant.id].length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <p className="text-caption">拖曳任務到此象限</p>
+                      {task.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {task.location}
                         </div>
                       )}
+                      
+                      <div className="flex items-center gap-1">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: getCategoryColor(task.category) }}
+                        />
+                        {task.category}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                        <Edit className="w-3 h-3 mr-1" />
+                        編輯
+                      </Button>
+                      <Button size="sm" className="h-7 px-2 text-xs">
+                        <Check className="w-3 h-3 mr-1" />
+                        完成
+                      </Button>
                     </div>
                   </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
+                </PopoverContent>
+              </Popover>
+            );
+          })}
         </div>
-      </DragDropContext>
+
+        {/* Scale indicators */}
+        <div className="absolute bottom-0 left-8 right-8 flex justify-between text-xs text-muted-foreground">
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+        </div>
+        
+        <div className="absolute top-8 bottom-8 left-0 flex flex-col-reverse justify-between text-xs text-muted-foreground">
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+        </div>
+      </div>
     </div>
   );
 };
