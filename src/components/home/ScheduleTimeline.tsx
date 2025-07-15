@@ -98,18 +98,18 @@ export const ScheduleTimeline = () => {
   return (
     <div className="relative">
       {/* Full Vertical Timeline */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 flex flex-col">
-        {/* Main timeline line - 2px width, offset to make room for time labels */}
-        <div className="absolute left-12 top-0 bottom-0 bg-border" style={{ width: '2px' }}></div>
+      <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col">
+        {/* Main timeline line - 2px width */}
+        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-timeline-color" style={{ width: '2px' }}></div>
         
         {/* Hour markers and labels */}
-        {Array.from({ length: 14 }, (_, i) => {
-          const hour = 7 + i; // Start from 7AM to 8PM
-          const topPosition = i * 60; // More compact spacing
+        {Array.from({ length: 12 }, (_, i) => {
+          const hour = 8 + i; // Start from 8AM
+          const topPosition = i * 80;
           return (
             <div key={hour} className="absolute left-0" style={{ top: `${topPosition}px` }}>
-              {/* Hour text - left side of line, well spaced */}
-              <span className="absolute text-xs font-medium text-muted-foreground" style={{ right: '16px', top: '-8px', width: '32px', textAlign: 'right' }}>
+              {/* Hour text - left side of line, no overlap */}
+              <span className="absolute text-xs font-medium text-muted-foreground" style={{ right: '32px', top: '-6px' }}>
                 {hour.toString().padStart(2, '0')}:00
               </span>
             </div>
@@ -120,25 +120,20 @@ export const ScheduleTimeline = () => {
         {todayTasks.map((task, index) => {
           const hour = parseInt(task.time.split(':')[0]);
           const minutes = parseInt(task.time.split(':')[1]);
-          const hourOffset = hour - 7; // Adjust for 7AM start
-          const topPosition = (hourOffset * 60) + (minutes / 60 * 60);
+          const topPosition = ((hour - 8) * 80) + (minutes / 60 * 80);
           
           return (
             <div
               key={`dot-${task.id}`}
-              className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background z-20 shadow-sm"
-              style={{ 
-                top: `${topPosition + 24}px`, // Offset to align with task card center
-                left: '43px', // Center on the line
-                transform: 'translate(-50%, -50%)'
-              }}
+              className="absolute w-3 h-3 bg-primary rounded-full border-2 border-background z-10"
+              style={{ top: `${topPosition}px`, left: '14px' }}
             />
           );
         })}
       </div>
 
-      {/* Task Cards */}
-      <div className="ml-20 space-y-4">
+      {/* Time Labels and Task Cards */}
+      <div className="ml-12 space-y-3">
         {todayTasks.map((task, index) => (
           <div key={task.id} className="relative">
             

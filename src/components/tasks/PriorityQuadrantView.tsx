@@ -106,13 +106,13 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
         {/* Quadrant Background Colors */}
         <div className="absolute inset-8">
           {/* Top half - 緊急 */}
-          <div className="absolute top-0 left-0 right-0 h-1/2" style={{ backgroundColor: '#FFECE8' }}></div>
+          <div className="absolute top-0 left-0 right-0 h-1/2 bg-orange-50/30"></div>
           {/* Bottom half - 不緊急 */}
-          <div className="absolute bottom-0 left-0 right-0 h-1/2" style={{ backgroundColor: '#E8F4FF' }}></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-blue-50/30"></div>
           {/* Left half - 不重要 */}
-          <div className="absolute top-0 left-0 bottom-0 w-1/2" style={{ backgroundColor: '#F5F5F5' }}></div>
+          <div className="absolute top-0 left-0 bottom-0 w-1/2 bg-gray-50/30"></div>
           {/* Right half - 重要 */}
-          <div className="absolute top-0 right-0 bottom-0 w-1/2" style={{ backgroundColor: '#F0FFF6' }}></div>
+          <div className="absolute top-0 right-0 bottom-0 w-1/2 bg-green-50/30"></div>
         </div>
         
         {/* Axis Labels */}
@@ -136,12 +136,12 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
           重要
         </div>
 
-        {/* Quadrant Lines - More visible */}
+        {/* Quadrant Lines */}
         <div className="absolute inset-0 m-8">
           {/* Vertical center line */}
-          <div className="absolute left-1/2 top-0 bottom-0 bg-border" style={{ width: '2px', transform: 'translateX(-1px)' }} />
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/50" />
           {/* Horizontal center line */}
-          <div className="absolute top-1/2 left-0 right-0 bg-border" style={{ height: '2px', transform: 'translateY(-1px)' }} />
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-border/50" />
         </div>
 
         {/* Draggable Task Dots */}
@@ -161,58 +161,13 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
                     }}
                     onClick={() => showMiniTaskInfo(task)}
                     onMouseDown={(e) => {
-                      e.preventDefault();
-                      let isDragging = false;
-                      const startX = e.clientX;
-                      const startY = e.clientY;
-                      const rect = e.currentTarget.closest('.relative')?.getBoundingClientRect();
-                      
-                      const handleMouseMove = (moveEvent: MouseEvent) => {
-                        if (!rect) return;
-                        
-                        const deltaX = Math.abs(moveEvent.clientX - startX);
-                        const deltaY = Math.abs(moveEvent.clientY - startY);
-                        
-                        if (deltaX > 5 || deltaY > 5) {
-                          isDragging = true;
-                        }
-                        
-                        if (isDragging) {
-                          const relativeX = (moveEvent.clientX - rect.left - 32) / (rect.width - 64);
-                          const relativeY = (moveEvent.clientY - rect.top - 32) / (rect.height - 64);
-                          
-                          const newImportance = Math.max(1, Math.min(5, Math.round(relativeX * 4) + 1));
-                          const newUrgency = Math.max(1, Math.min(5, 5 - Math.round(relativeY * 4)));
-                          
-                          // Update position immediately for visual feedback
-                          const newPosition = getDotPosition(newImportance, newUrgency);
-                          e.currentTarget.style.left = `${newPosition.x}%`;
-                          e.currentTarget.style.top = `${newPosition.y}%`;
-                        }
-                      };
-                      
-                      const handleMouseUp = (upEvent: MouseEvent) => {
-                        if (isDragging && rect) {
-                          const relativeX = (upEvent.clientX - rect.left - 32) / (rect.width - 64);
-                          const relativeY = (upEvent.clientY - rect.top - 32) / (rect.height - 64);
-                          
-                          const newImportance = Math.max(1, Math.min(5, Math.round(relativeX * 4) + 1));
-                          const newUrgency = Math.max(1, Math.min(5, 5 - Math.round(relativeY * 4)));
-                          
-                          updatePriority(task.id, newImportance, newUrgency);
-                        }
-                        
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', handleMouseUp);
-                      };
-                      
-                      document.addEventListener('mousemove', handleMouseMove);
-                      document.addEventListener('mouseup', handleMouseUp);
+                      // Trigger: startDragTask for future implementation
+                      console.log("Trigger: startDragTask", task.id);
                     }}
                   />
                 </PopoverTrigger>
                 
-                 <PopoverContent className="w-64 p-3 rounded-2xl border shadow-lg bg-popover">
+                 <PopoverContent className="w-64 p-3 rounded-2xl">
                    <div className="space-y-3">
                      <h4 className="font-medium text-sm">{task.title}</h4>
                      

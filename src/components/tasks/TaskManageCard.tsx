@@ -209,7 +209,7 @@ export const TaskManageCard = ({ task, onEdit }: TaskManageCardProps) => {
           </div>
           
           {/* Status Badge - Bottom */}
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end">
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
               {getStatusText(task.status)}
             </span>
