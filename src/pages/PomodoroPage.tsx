@@ -166,23 +166,12 @@ export const PomodoroPage = () => {
           )}
         </div>
 
-        {/* Status & Settings */}
-        <div className="space-y-4 w-full max-w-sm">
-          {/* Focus Mode Toggle */}
+        {/* Focus Mode Toggle */}
+        <div className="w-full max-w-sm">
           <HideOverlapToggle
             enabled={allowOverlapDuringFocus}
             onToggle={handleOverlapToggle}
           />
-
-          {/* Session Status */}
-          <div className="app-card p-4 text-center">
-            <p className="text-caption text-muted-foreground mb-1">目前模式</p>
-            <p className="text-h3 font-semibold">
-              {state === "work" ? "🍅 專注工作" : 
-               state === "break" ? "☕ 休息時間" :
-               state === "paused" ? "⏸️ 已暫停" : "⭕ 待開始"}
-            </p>
-          </div>
         </div>
       </div>
 

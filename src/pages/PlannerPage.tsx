@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScheduleCalendar } from "@/components/planner/ScheduleCalendar";
 import { UnscheduledTaskDrawer } from "@/components/planner/UnscheduledTaskDrawer";
@@ -70,6 +70,7 @@ export const PlannerPage = () => {
               onClick={() => setIsDrawerOpen(true)}
               className="text-sm"
             >
+              <List className="w-4 h-4 mr-2" />
               未排程任務
             </Button>
           </div>
@@ -112,10 +113,7 @@ export const PlannerPage = () => {
 
       {/* Calendar Content */}
       <div className="p-4 pb-24">
-        <ScheduleCalendar 
-          currentDate={currentDate}
-          viewMode={viewMode}
-        />
+        <ScheduleCalendar />
       </div>
 
       {/* Unscheduled Tasks Drawer */}

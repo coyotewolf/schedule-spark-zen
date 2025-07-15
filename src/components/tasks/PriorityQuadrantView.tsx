@@ -98,17 +98,30 @@ export const PriorityQuadrantView = ({ timePeriod }: PriorityQuadrantViewProps) 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-h3 font-semibold">優先順序矩陣 - {timePeriod}</h3>
+        <h3 className="text-h3 font-semibold text-center w-full">艾森豪矩陣</h3>
       </div>
 
       {/* Priority Quadrant Board - Dot Mode */}
       <div className="relative bg-card border border-border rounded-xl p-8" style={{ height: '500px' }}>
         {/* Axis Labels */}
-        <div className="absolute -left-16 top-1/2 -translate-y-1/2 -rotate-90 text-sm font-medium text-muted-foreground">
-          緊急程度
+        {/* Top - 緊急 */}
+        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
+          緊急
         </div>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm font-medium text-muted-foreground">
-          重要程度
+        
+        {/* Bottom - 不緊急 */}
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-sm font-medium text-muted-foreground">
+          不緊急
+        </div>
+        
+        {/* Left - 不重要 */}
+        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm font-medium text-muted-foreground origin-center">
+          不重要
+        </div>
+        
+        {/* Right - 重要 */}
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-sm font-medium text-muted-foreground origin-center">
+          重要
         </div>
 
         {/* Quadrant Lines */}

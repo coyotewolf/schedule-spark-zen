@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Clock, MapPin, GripVertical } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, MapPin, GripVertical, Edit, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Task {
   id: string;
   title: string;
-  category: 'general' | 'background' | 'light';
+  category: string; // User-defined category like "工作", "個人"
+  taskType: 'general' | 'background' | 'light'; // Fixed task type
   estimatedTime: number;
   location?: string;
   preferredSlot?: string;
@@ -18,19 +19,47 @@ interface Task {
 
 interface TaskCardProps {
   task: Task;
+  onEdit?: (taskId: string) => void;
 }
 
-export const TaskCard = ({ task }: TaskCardProps) => {
+export const TaskCard = ({ task, onEdit }: TaskCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const getCategoryBadgeClass = (category: Task['category']) => {
-    switch (category) {
+  const getCategoryColor = (category: string) => {
+    // Category colors based on design system
+    switch (category.toLowerCase()) {
+      case '工作':
+        return 'bg-primary text-primary-foreground';
+      case '個人':
+        return 'bg-secondary text-secondary-foreground';
+      case '學習':
+        return 'bg-accent text-accent-foreground';
+      case '健康':
+        return 'bg-success text-success-foreground';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getTaskTypeBadgeClass = (taskType: Task['taskType']) => {
+    switch (taskType) {
       case 'general':
-        return 'badge-general';
+        return 'bg-primary/20 text-primary-foreground';
       case 'background':
-        return 'badge-background';
+        return 'bg-secondary/20 text-secondary-foreground';
       case 'light':
-        return 'badge-light';
+        return 'bg-accent/20 text-accent-foreground';
+    }
+  };
+
+  const getTaskTypeLabel = (taskType: Task['taskType']) => {
+    switch (taskType) {
+      case 'general':
+        return '一般任務';
+      case 'background':
+        return '背景任務';
+      case 'light':
+        return '輕型任務';
     }
   };
 
@@ -99,15 +128,34 @@ export const TaskCard = ({ task }: TaskCardProps) => {
             
             <div className="flex items-center gap-2">
               {/* Category Badge */}
-              <span className={`px-2 py-1 rounded-full text-xs ${getCategoryBadgeClass(task.category)}`}>
-                {task.category === 'general' ? '一般' : 
-                 task.category === 'background' ? '背景' : '輕型'}
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(task.category)}`}>
+                {task.category}
+              </span>
+              
+              {/* Task Type Badge */}
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTaskTypeBadgeClass(task.taskType)}`}>
+                {getTaskTypeLabel(task.taskType)}
               </span>
               
               {/* Status Badge */}
               <span className={`text-xs font-medium ${getStatusColor(task.status)}`}>
                 {getStatusText(task.status)}
               </span>
+              
+              {/* Edit Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(task.id);
+                  // Trigger: openEditTaskDialog
+                  console.log("Trigger: openEditTaskDialog", task.id);
+                }}
+              >
+                <Edit className="w-3 h-3" />
+              </Button>
             </div>
           </div>
           
