@@ -33,25 +33,59 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({model: "gemini-1.5-flash-latest"});
 
 /**
- * A test utility function to create a premium user for testing.
+ * Admin-only utility. Claims must be assigned by a trusted Admin SDK operator.
+ * No client-writable Firestore field is accepted as proof of administration.
  */
 export const createPremiumUser = onRequest(async (req, res) => {
-  const testEmail = "premium@test.com";
-  const testPassword = "password123";
+  if (req.method !== "POST") {
+    res.set("Allow", "POST").status(405).send("Method not allowed.");
+    return;
+  }
+  const bearer = /^Bearer ([^\s]+)$/i.exec(req.get("Authorization") || "");
+  if (!bearer) {
+    res.status(401).send("Authentication required.");
+    return;
+  }
+  let administrator = false;
   try {
-    let userRecord = await auth.getUserByEmail(testEmail).catch(() => null);
-    if (userRecord) {
-      logger.info(`User ${testEmail} already exists.`);
-    } else {
-      userRecord = await auth.createUser({email: testEmail, password: testPassword, displayName: "Premium User"});
-      logger.info(`Successfully created new user: ${userRecord.uid}`);
+    const token = await auth.verifyIdToken(bearer[1], true);
+    administrator = token.admin === true;
+  } catch {
+    res.status(401).send("Invalid authentication.");
+    return;
+  }
+  if (!administrator) {
+    res.status(403).send("Administrator permission required.");
+    return;
+  }
+  const {email, password} = req.body || {};
+  if (typeof email !== "string" || email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      (password !== undefined && (typeof password !== "string" ||
+       password.length < 12 || password.length > 128))) {
+    res.status(400).send("Provide a valid email and, for new users, a password of 12-128 characters.");
+    return;
+  }
+  try {
+    let userRecord = await auth.getUserByEmail(email).catch((error: {code?: string}) => {
+      if (error.code === "auth/user-not-found") return null;
+      throw error;
+    });
+    if (!userRecord) {
+      if (password === undefined) {
+        res.status(400).send("A password is required for a new user.");
+        return;
+      }
+      userRecord = await auth.createUser({email, password, displayName: "Premium User"});
     }
-    await db.collection("users").doc(userRecord.uid).set({email: testEmail, plan: "PREMIUM", displayName: "Premium User"});
-    logger.info(`Set plan to PREMIUM for user: ${userRecord.uid}`);
-    res.status(200).send(`Successfully created/updated premium user: ${testEmail} (UID: ${userRecord.uid}).`);
-  } catch (error) {
-    logger.error("Failed to create premium user", error);
-    res.status(500).send("Error creating premium user.");
+    await db.collection("users").doc(userRecord.uid).set(
+      {email, plan: "PREMIUM"}, {merge: true});
+    logger.info("Administrator updated premium user", {uid: userRecord.uid});
+    res.status(200).json({uid: userRecord.uid});
+  } catch {
+    // Do not log request credentials, bearer tokens or provider error payloads.
+    logger.error("Failed to create or update premium user");
+    res.status(500).send("Error creating or updating premium user.");
   }
 });
 
