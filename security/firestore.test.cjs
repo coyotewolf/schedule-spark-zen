@@ -28,3 +28,29 @@ test('Firestore ownership blocks theft, reassignment, and anonymous access', asy
     }
   } finally { await env.cleanup(); }
 });
+
+test('client cannot mint or modify premium entitlements', async () => {
+  const env = await initializeTestEnvironment({ projectId: 'demo-security-audit', firestore: {
+    host: '127.0.0.1', port: Number(process.env.SECURITY_FIRESTORE_PORT || 8787),
+    rules: fs.readFileSync(path.join(__dirname, '../firestore.rules'), 'utf8') } });
+  try {
+    const owner = env.authenticatedContext('plan-owner').firestore();
+    const ref = doc(owner, 'users/plan-owner');
+    await assertFails(setDoc(ref, {plan:'PREMIUM'}));
+    await assertFails(setDoc(ref, {plan:null}));
+    await assertSucceeds(setDoc(ref, {plan:'FREE',displayName:'Owner'}));
+    await assertFails(updateDoc(ref, {plan:'PREMIUM'}));
+    await assertFails(setDoc(ref, {displayName:'Remove plan'}));
+    await assertSucceeds(updateDoc(ref, {displayName:'Updated'}));
+    await env.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'users/plan-owner'), {plan:'PREMIUM',displayName:'Owner'});
+    });
+    await assertSucceeds(updateDoc(ref, {displayName:'Still premium'}));
+    await assertFails(updateDoc(ref, {plan:'FREE'}));
+    await assertSucceeds(deleteDoc(ref));
+    await assertFails(setDoc(ref, {plan:'PREMIUM'}));
+    await assertSucceeds(setDoc(ref, {displayName:'No client entitlement'}));
+    await assertFails(updateDoc(ref, {plan:'PREMIUM'}));
+    await assertSucceeds(updateDoc(ref, {displayName:'Legacy-compatible'}));
+  } finally { await env.cleanup(); }
+});
