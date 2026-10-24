@@ -8,7 +8,8 @@
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test:security": "npm run build && node --test security/auth-guards.test.cjs"
   },
   "engines": {
     "node": "22"
@@ -18,8 +19,8 @@
     "@google-cloud/tasks": "^6.2.0",
     "@google/generative-ai": "^0.24.1",
     "dotenv": "^17.2.0",
-    "firebase-admin": "^12.7.0",
-    "firebase-functions": "^6.0.1"
+    "firebase-admin": "14.5.0",
+    "firebase-functions": "7.4.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.12.0",
@@ -27,7 +28,6 @@
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
-    "firebase-functions-test": "^3.1.0",
     "typescript": "^5.7.3"
   },
   "private": true
