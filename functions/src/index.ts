@@ -9,7 +9,7 @@ import {getFirestore} from "firebase-admin/firestore";
 import {getAuth} from "firebase-admin/auth";
 import {getMessaging} from "firebase-admin/messaging";
 import {CloudTasksClient} from "@google-cloud/tasks";
-import {Task, ScheduleBlock, UserPreference, Category} from "./types";
+import {Task, ScheduleBlock, UserPreference} from "./types";
 
 initializeApp();
 const db = getFirestore();
@@ -74,7 +74,7 @@ export const smartSchedule = onCall(async (request) => {
     throw new HttpsError("internal", "Could not verify user plan.");
   }
 
-  const {tasks: clientTasks, userPref: clientUserPref, existingBlocks: clientExistingBlocks} = request.data;
+  const {tasks: clientTasks, userPref: clientUserPref} = request.data;
   logger.info(`Smart scheduling request for user: ${uid}`, {taskCount: clientTasks?.length || 0, clientUserPref});
 
   if (!clientTasks || !Array.isArray(clientTasks) || clientTasks.length === 0) {
@@ -236,12 +236,7 @@ export const getWeeklyAnalytics = onCall(async (request) => {
       .get();
     const scheduleBlocks = scheduleBlocksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ScheduleBlock));
 
-    // Fetch categories for mapping
-    const categoriesSnap = await db.collection('categories')
-      .where('userId', '==', uid)
-      .get();
-    const categories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-    const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+
 
     // --- Analytics Calculations ---
     let completedTasks = 0;
