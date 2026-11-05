@@ -9,7 +9,7 @@ import {getFirestore} from "firebase-admin/firestore";
 import {getAuth} from "firebase-admin/auth";
 import {getMessaging} from "firebase-admin/messaging";
 import {CloudTasksClient} from "@google-cloud/tasks";
-import {Task, ScheduleBlock, UserPreference, Category} from "./types";
+import {Task, ScheduleBlock, UserPreference} from "./types";
 
 initializeApp();
 const db = getFirestore();
@@ -33,25 +33,59 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({model: "gemini-1.5-flash-latest"});
 
 /**
- * A test utility function to create a premium user for testing.
+ * Admin-only utility. Claims must be assigned by a trusted Admin SDK operator.
+ * No client-writable Firestore field is accepted as proof of administration.
  */
 export const createPremiumUser = onRequest(async (req, res) => {
-  const testEmail = "premium@test.com";
-  const testPassword = "password123";
+  if (req.method !== "POST") {
+    res.set("Allow", "POST").status(405).send("Method not allowed.");
+    return;
+  }
+  const bearer = /^Bearer ([^\s]+)$/i.exec(req.get("Authorization") || "");
+  if (!bearer) {
+    res.status(401).send("Authentication required.");
+    return;
+  }
+  let administrator = false;
   try {
-    let userRecord = await auth.getUserByEmail(testEmail).catch(() => null);
-    if (userRecord) {
-      logger.info(`User ${testEmail} already exists.`);
-    } else {
-      userRecord = await auth.createUser({email: testEmail, password: testPassword, displayName: "Premium User"});
-      logger.info(`Successfully created new user: ${userRecord.uid}`);
+    const token = await auth.verifyIdToken(bearer[1], true);
+    administrator = token.admin === true;
+  } catch {
+    res.status(401).send("Invalid authentication.");
+    return;
+  }
+  if (!administrator) {
+    res.status(403).send("Administrator permission required.");
+    return;
+  }
+  const {email, password} = req.body || {};
+  if (typeof email !== "string" || email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      (password !== undefined && (typeof password !== "string" ||
+       password.length < 12 || password.length > 128))) {
+    res.status(400).send("Provide a valid email and, for new users, a password of 12-128 characters.");
+    return;
+  }
+  try {
+    let userRecord = await auth.getUserByEmail(email).catch((error: {code?: string}) => {
+      if (error.code === "auth/user-not-found") return null;
+      throw error;
+    });
+    if (!userRecord) {
+      if (password === undefined) {
+        res.status(400).send("A password is required for a new user.");
+        return;
+      }
+      userRecord = await auth.createUser({email, password, displayName: "Premium User"});
     }
-    await db.collection("users").doc(userRecord.uid).set({email: testEmail, plan: "PREMIUM", displayName: "Premium User"});
-    logger.info(`Set plan to PREMIUM for user: ${userRecord.uid}`);
-    res.status(200).send(`Successfully created/updated premium user: ${testEmail} (UID: ${userRecord.uid}).`);
-  } catch (error) {
-    logger.error("Failed to create premium user", error);
-    res.status(500).send("Error creating premium user.");
+    await db.collection("users").doc(userRecord.uid).set(
+      {email, plan: "PREMIUM"}, {merge: true});
+    logger.info("Administrator updated premium user", {uid: userRecord.uid});
+    res.status(200).json({uid: userRecord.uid});
+  } catch {
+    // Do not log request credentials, bearer tokens or provider error payloads.
+    logger.error("Failed to create or update premium user");
+    res.status(500).send("Error creating or updating premium user.");
   }
 });
 
@@ -74,7 +108,7 @@ export const smartSchedule = onCall(async (request) => {
     throw new HttpsError("internal", "Could not verify user plan.");
   }
 
-  const {tasks: clientTasks, userPref: clientUserPref, existingBlocks: clientExistingBlocks} = request.data;
+  const {tasks: clientTasks, userPref: clientUserPref} = request.data;
   logger.info(`Smart scheduling request for user: ${uid}`, {taskCount: clientTasks?.length || 0, clientUserPref});
 
   if (!clientTasks || !Array.isArray(clientTasks) || clientTasks.length === 0) {
@@ -236,12 +270,7 @@ export const getWeeklyAnalytics = onCall(async (request) => {
       .get();
     const scheduleBlocks = scheduleBlocksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ScheduleBlock));
 
-    // Fetch categories for mapping
-    const categoriesSnap = await db.collection('categories')
-      .where('userId', '==', uid)
-      .get();
-    const categories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-    const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+
 
     // --- Analytics Calculations ---
     let completedTasks = 0;

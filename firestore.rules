@@ -10,8 +10,12 @@ service cloud.firestore {
 
     // Users can manage their own user document
     match /users/{userId} {
-      allow read, update, delete: if isOwner(userId);
-      allow create: if isOwner(userId);
+      allow read, delete: if isOwner(userId);
+      // Premium entitlements are written only by trusted server code.
+      allow create: if isOwner(userId)
+                    && request.resource.data.get('plan', 'FREE') == 'FREE';
+      allow update: if isOwner(userId)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['plan']);
     }
 
     // Users can manage their own preferences document
