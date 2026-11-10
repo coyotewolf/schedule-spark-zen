@@ -74,7 +74,7 @@ export const smartSchedule = onCall(async (request) => {
     throw new HttpsError("internal", "Could not verify user plan.");
   }
 
-  const {tasks: clientTasks, userPref: clientUserPref, existingBlocks: clientExistingBlocks} = request.data;
+  const {tasks: clientTasks, userPref: clientUserPref, existingBlocks: _clientExistingBlocks} = request.data;
   logger.info(`Smart scheduling request for user: ${uid}`, {taskCount: clientTasks?.length || 0, clientUserPref});
 
   if (!clientTasks || !Array.isArray(clientTasks) || clientTasks.length === 0) {
@@ -241,7 +241,7 @@ export const getWeeklyAnalytics = onCall(async (request) => {
       .where('userId', '==', uid)
       .get();
     const categories = categoriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-    const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+    new Map(categories.map(cat => [cat.id, cat]));
 
     // --- Analytics Calculations ---
     let completedTasks = 0;
