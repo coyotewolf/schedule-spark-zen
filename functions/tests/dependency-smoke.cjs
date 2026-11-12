@@ -46,3 +46,11 @@ test('updated XML and querystring parsers retain basic parsing behavior', () => 
   assert.deepEqual(new XMLParser().parse('<ListBucketResult><Name>example</Name></ListBucketResult>'), { ListBucketResult: { Name: 'example' } });
   assert.deepEqual(qs.parse('filter[name]=example&limit=2'), { filter: { name: 'example' }, limit: '2' });
 });
+
+
+test('the production module does not export test account provisioning', () => {
+  assert.equal(Object.hasOwn(functions, 'createPremiumUser'), false);
+  assert.deepEqual(Object.keys(functions).sort(), [
+    'getWeeklyAnalytics', 'parseVoiceText', 'sendTestNotification', 'smartSchedule',
+  ]);
+});
