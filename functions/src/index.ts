@@ -1,19 +1,17 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import {onCall, HttpsError, onRequest} from "firebase-functions/v2/https";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore} from "firebase-admin/firestore";
-import {getAuth} from "firebase-admin/auth";
 import {getMessaging} from "firebase-admin/messaging";
 import {CloudTasksClient} from "@google-cloud/tasks";
 import {Task, ScheduleBlock, UserPreference, Category} from "./types";
 
 initializeApp();
 const db = getFirestore();
-const auth = getAuth();
 const messaging = getMessaging();
 const tasksClient = new CloudTasksClient();
 
@@ -31,29 +29,6 @@ if (!GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({model: "gemini-1.5-flash-latest"});
-
-/**
- * A test utility function to create a premium user for testing.
- */
-export const createPremiumUser = onRequest(async (req, res) => {
-  const testEmail = "premium@test.com";
-  const testPassword = "password123";
-  try {
-    let userRecord = await auth.getUserByEmail(testEmail).catch(() => null);
-    if (userRecord) {
-      logger.info(`User ${testEmail} already exists.`);
-    } else {
-      userRecord = await auth.createUser({email: testEmail, password: testPassword, displayName: "Premium User"});
-      logger.info(`Successfully created new user: ${userRecord.uid}`);
-    }
-    await db.collection("users").doc(userRecord.uid).set({email: testEmail, plan: "PREMIUM", displayName: "Premium User"});
-    logger.info(`Set plan to PREMIUM for user: ${userRecord.uid}`);
-    res.status(200).send(`Successfully created/updated premium user: ${testEmail} (UID: ${userRecord.uid}).`);
-  } catch (error) {
-    logger.error("Failed to create premium user", error);
-    res.status(500).send("Error creating premium user.");
-  }
-});
 
 /**
  * Receives tasks and preferences, returns a smart schedule suggestion.
