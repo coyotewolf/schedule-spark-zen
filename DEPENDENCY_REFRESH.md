@@ -45,3 +45,14 @@ This is a compatible dependency refresh, not a claim that every package is on it
 | vaul | 0.9.9 | 1.1.2 |
 | vite | 6.4.6 | 8.3.8 |
 | zod | 3.25.76 | 4.6.7 |
+
+## Nested Functions follow-up
+
+The initial refresh covered only the frontend root manifest. A subsequent recursive review found the separate `functions/package.json` and `functions/package-lock.json`; these are now refreshed and covered by their own Node 22 CI job.
+
+- Updated nine existing Functions dependency ranges within their current major lines and refreshed transitive dependencies without overrides.
+- Firebase Admin 12.7.0 now resolves `@google-cloud/storage` 7.22.0 and `fast-xml-parser` 5.12.0 instead of storage 7.16.0 / parser 4.5.3.
+- Firebase Functions 6.6.0 now resolves Express 4.22.3 / body-parser 1.20.9 / `qs` 6.16.2 instead of `qs` 6.13.0.
+- Added dependency regression checks, XML/querystring parsing smoke checks, and callable authentication/input guard tests. These tests make no requests to Firebase, Cloud Tasks, FCM or Gemini.
+- The unchanged lint command has a pre-existing ESLint configuration conflict with the root flat configuration. Explicit legacy-config execution also reports existing source-style findings. This update does not claim lint passes or disable those findings.
+- No Firebase deployment or npm audit was performed. This is a targeted dependency repair, not a clean-security-audit claim.
